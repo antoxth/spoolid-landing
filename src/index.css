@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-orange: #FF6B35;
+  --color-brand-blue: #00D9FF;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.btn-primary {
+  padding: 1rem 2rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(to right, var(--color-brand-orange), rgb(249 115 22));
+  transition: all 0.3s;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 10px 15px -3px rgba(255, 107, 53, 0.5);
+  transform: scale(1.05);
+}
+
+.btn-secondary {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  color: white;
+  background: linear-gradient(to right, var(--color-brand-blue), rgb(6 182 212));
+  transition: all 0.3s;
+}
+
+.btn-secondary:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 217, 255, 0.5);
+  transform: scale(1.05);
+}
+
+.card-glow {
+  background: rgba(17, 24, 39, 0.5);
+  backdrop-filter: blur(12px);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  border: 1px solid rgb(31 41 55);
+  transition: all 0.3s;
+}
+
+.card-glow:hover {
+  border-color: rgba(255, 107, 53, 0.5);
+  box-shadow: 0 20px 25px -5px rgba(255, 107, 53, 0.1);
+}
+
+.section-title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  background: linear-gradient(to right, white, rgb(156 163 175));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@media (min-width: 768px) {
+  .section-title {
+    font-size: 3rem;
+  }
+}
