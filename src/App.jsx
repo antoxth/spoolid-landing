@@ -553,8 +553,13 @@ function App() {
           {submitSuccess ? (
             <div className="max-w-xl mx-auto p-6 bg-green-500/10 border border-green-500/30 rounded-lg">
               <CheckCircle2 size={48} className="text-green-500 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-green-500 mb-2">You're on the list! 🎉</h3>
-              <p className="text-gray-400">We'll notify you as soon as beta spots open up.</p>
+              <h3 className="text-2xl font-bold text-green-500 mb-3">You're In! 🎉</h3>
+              <p className="text-gray-300 text-lg mb-2">Welcome to the SpoolID Beta!</p>
+              <p className="text-gray-400 mb-6">Check your email for next steps.</p>
+              <div className="mt-4 p-4 bg-gradient-to-r from-brand-orange/10 to-brand-blue/10 border border-brand-orange/30 rounded-lg max-w-md mx-auto">
+                <p className="text-sm text-gray-200 font-medium mb-1">📧 Quick favor: What's your most-used filament brand?</p>
+                <p className="text-xs text-gray-400">Reply to the email and let us know!</p>
+              </div>
             </div>
           ) : (
             <>
