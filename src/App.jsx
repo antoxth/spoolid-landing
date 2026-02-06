@@ -63,7 +63,7 @@ function App() {
 
     // Using Web3Forms - free email collection service
     const formData = new FormData()
-    formData.append('access_key', 'YOUR_WEB3FORMS_ACCESS_KEY') // User will replace this
+    formData.append('access_key', '786fd9cc-5360-4f0d-8a42-2be634c76c06') // Web3Forms access key
     formData.append('email', email)
     formData.append('subject', 'New SpoolID Waitlist Signup')
     formData.append('from_name', 'SpoolID Landing Page')
