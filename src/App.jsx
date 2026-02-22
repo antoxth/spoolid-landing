@@ -30,6 +30,11 @@ function App() {
   const [isUploading, setIsUploading] = useState(false)
   const [uploadStatus, setUploadStatus] = useState(null)
 
+  // Post-upload email state
+  const [postUploadEmail, setPostUploadEmail] = useState('')
+  const [isSubmittingPostEmail, setIsSubmittingPostEmail] = useState(false)
+  const [postEmailSuccess, setPostEmailSuccess] = useState(false)
+
   const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxQTNVG1aJi3nJijdzhljl504_WaJrwpaWgb9tO3PUhhhlqySPbQt6cHzZ-16VZFBX7/exec"
 
   const handleNewsletterSubmit = async (e) => {
@@ -62,6 +67,38 @@ function App() {
       alert("Errore durante l'iscrizione. Riprova.")
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handlePostUploadEmailSubmit = async (e) => {
+    e.preventDefault()
+    setIsSubmittingPostEmail(true)
+
+    try {
+      const response = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8',
+        },
+        body: JSON.stringify({
+          action: 'newsletter',
+          email: postUploadEmail
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.status === 'success') {
+        setPostEmailSuccess(true)
+        setPostUploadEmail('')
+      } else {
+        throw new Error(data.message)
+      }
+    } catch (error) {
+      console.error('Error submitting post-upload email:', error)
+      alert("Errore durante l'iscrizione. Riprova.")
+    } finally {
+      setIsSubmittingPostEmail(false)
     }
   }
 
@@ -109,7 +146,7 @@ function App() {
           if (data.status === 'success') {
             setUploadStatus('success')
             setVideoFile(null)
-            setTimeout(() => setUploadStatus(null), 8000)
+            // Timeout rimosso per permettere all'utente di inserire l'email
           } else {
             throw new Error(data.message || 'Upload failed')
           }
@@ -442,9 +479,52 @@ function App() {
               )}
 
               {uploadStatus === 'success' && (
-                <div className="mt-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg text-green-400 flex items-center justify-center gap-2">
-                  <CheckCircle size={20} />
-                  <span>Upload completato! Grazie mille per il tuo contributo.</span>
+                <div className="mt-8 p-6 bg-gray-800/80 border border-green-500/30 rounded-xl text-center shadow-lg relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-green-500"></div>
+                  <div className="flex items-center justify-center gap-3 mb-4 text-green-400">
+                    <CheckCircle size={28} />
+                    <h4 className="text-xl font-bold">Upload completato!</h4>
+                  </div>
+                  <p className="text-gray-300 mb-6 font-medium">Grazie mille per il tuo prezioso contributo. Ti andrebbe di ricevere una mail quando il modello AI sarà pronto?</p>
+
+                  {postEmailSuccess ? (
+                    <div className="p-4 bg-green-500/10 rounded-lg text-green-400 font-medium">
+                      Iscrizione confermata! Ti terrò aggiornato sui progressi.
+                    </div>
+                  ) : (
+                    <form onSubmit={handlePostUploadEmailSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+                      <input
+                        type="email"
+                        required
+                        value={postUploadEmail}
+                        onChange={(e) => setPostUploadEmail(e.target.value)}
+                        placeholder="La tua email"
+                        className="flex-1 px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-brand-orange transition-colors"
+                        disabled={isSubmittingPostEmail}
+                      />
+                      <button
+                        type="submit"
+                        className="btn-primary py-3 px-6 whitespace-nowrap text-sm"
+                        disabled={isSubmittingPostEmail}
+                      >
+                        {isSubmittingPostEmail ? 'Invio in corso...' : 'Tienimi Aggiornato'}
+                      </button>
+                    </form>
+                  )}
+
+                  <div className="mt-8 pt-6 border-t border-gray-700">
+                    <button
+                      onClick={() => {
+                        setUploadStatus(null)
+                        setPostEmailSuccess(false)
+                        setPostUploadEmail('')
+                      }}
+                      className="text-gray-400 hover:text-brand-orange text-sm font-medium transition-colors flex items-center justify-center gap-2 mx-auto"
+                    >
+                      <Upload size={16} />
+                      Carica un altro video
+                    </button>
+                  </div>
                 </div>
               )}
 
