@@ -28,6 +28,15 @@ export default async function handler(req, res) {
             return res.status(500).json({ error: `Missing env vars — FOLDER_ID:${!!FOLDER_ID} CLIENT_ID:${!!clientId} SECRET:${!!clientSec} REFRESH:${!!refreshTok}` })
         }
 
+        // DEBUG: Log partial values to diagnose invalid_client
+        console.log('DEBUG ENV CHECK:',
+            'CLIENT_ID_START:', clientId?.substring(0, 20),
+            'CLIENT_ID_END:', clientId?.slice(-30),
+            'CLIENT_ID_LEN:', clientId?.length,
+            'SECRET_LEN:', clientSec?.length,
+            'REFRESH_LEN:', refreshTok?.length
+        )
+
         // Exchange refresh token for fresh access token
         const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
             method: 'POST',
