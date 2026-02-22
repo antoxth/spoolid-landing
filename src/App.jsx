@@ -173,7 +173,7 @@ function App({ lang = 'en' }) {
       // --- CHUNKED UPLOAD (memory-safe for Android & iOS) ---
       // 1.5 MB per chunk: small enough to stay under Safari's per-request limits
       // while still efficient (a 30 MB file = ~20 sequential requests).
-      const CHUNK_SIZE = 1.5 * 1024 * 1024 // 1.5 MB
+      const CHUNK_SIZE = 4 * 1024 * 1024 // 4 MB — fewer round-trips to Apps Script
 
       const arrayBuffer = await new Promise((resolve, reject) => {
         const reader = new FileReader()
