@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import {
-  Tag,
-  Scale,
-  Smartphone,
+  Camera,
+  Upload,
+  BrainCircuit,
   AlertTriangle,
   FileSpreadsheet,
   Ghost,
@@ -13,9 +13,7 @@ import {
   ChevronDown,
   Lock,
   Zap,
-  CreditCard,
-  Award,
-  Clock,
+  Play,
   Database
 } from 'lucide-react'
 
@@ -27,10 +25,10 @@ function App() {
   const [makerCount, setMakerCount] = useState(0)
   const [openFaq, setOpenFaq] = useState(null)
 
-  // Initial animated counter effect (slower)
+  // Initial animated counter effect Let's pretend we have some initial videos
   useEffect(() => {
-    const targetCount = 127
-    const duration = 4000 // 4 seconds - more relaxed animation
+    const targetCount = 142
+    const duration = 4000
     const steps = 80
     const increment = targetCount / steps
     let current = 0
@@ -48,25 +46,25 @@ function App() {
     return () => clearInterval(timer)
   }, [])
 
-  // Periodic increment effect - simulate new signups in real-time
+  // Periodic increment effect
   useEffect(() => {
     const incrementInterval = setInterval(() => {
       setMakerCount(prev => prev + 1)
-    }, Math.random() * 5000 + 5000) // Random between 5-10 seconds
+    }, Math.random() * 8000 + 10000)
 
     return () => clearInterval(incrementInterval)
   }, [])
 
-  const handleWaitlistSubmit = async (e) => {
+  const handleNewsletterSubmit = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
 
-    // Using Web3Forms - free email collection service
+    // Using Web3Forms
     const formData = new FormData()
-    formData.append('access_key', '786fd9cc-5360-4f0d-8a42-2be634c76c06') // Web3Forms key - verified working
+    formData.append('access_key', '786fd9cc-5360-4f0d-8a42-2be634c76c06') // Web3Forms key
     formData.append('email', email)
-    formData.append('subject', 'New SpoolID Waitlist Signup')
-    formData.append('from_name', 'SpoolID Landing Page')
+    formData.append('subject', 'Nuova iscrizione Newsletter SpoolID AI Project')
+    formData.append('from_name', 'SpoolID AI Research')
 
     try {
       const response = await fetch('https://api.web3forms.com/submit', {
@@ -89,22 +87,25 @@ function App() {
 
   const faqs = [
     {
-      q: "Do I need expensive equipment?",
-      a: "No! Any kitchen scale (€10-20) and cheap NFC tags (€0.10 each) work perfectly. You probably already have a scale at home."
+      q: "A cosa serve il video che devo caricare?",
+      a: "Il video ci serve per estrarre diverse angolazioni della tua bobina. Questi dati (dataset) verranno 'dati in pasto' a un modello di Intelligenza Artificiale per insegnargli a stimare quanto filamento è rimasto basandosi puramente sull'analisi visiva."
     },
     {
-      q: "Does it work with my 3D printer?",
-      a: "Yes! SpoolID works with ALL 3D printers and ALL filament brands. It's printer-agnostic - you just weigh and scan."
+      q: "Posso partecipare con qualsiasi marca di filamento?",
+      a: "Assolutamente sì! Più marche, colori e dimensioni diverse raccogliamo, più il modello AI diventerà preciso e universale."
     },
     {
-      q: "How accurate is the weight tracking?",
-      a: "Down to the gram! Unlike slicers that estimate based on theoretical flow rates, SpoolID uses real physical weight measurements."
+      q: "I miei dati personali e video sono al sicuro?",
+      a: "Sì, i video caricati tramite il form finiranno direttamente nel nostro spazio di archiviazione protetto (Google Drive). Verranno utilizzati esclusivamente a scopo di ricerca e non verranno condivisi o venduti."
     },
     {
-      q: "What happens after I join the waitlist?",
-      a: "You'll get early access to the beta app, 3 months of PRO features free, and direct input on features we build."
+      q: "Cosa succede dopo aver lasciato la mail?",
+      a: "Utilizzeremo la tua email esclusivamente per tenerti aggiornato mensilmente (nessun blocco di spam!) sui progressi della nostra ricerca AI e sull\'eventuale rilascio dell\'applicazione finale."
     }
   ]
+
+  // IMPORTANT: Metti qui l'URL del tuo Google Form per l'upload
+  const GOOGLE_FORM_UPLOAD_URL = "https://forms.gle/INSERISCI_QUI_IL_TUO_LINK_AL_FORM"
 
   return (
     <div className="min-h-screen bg-[#121212] text-white">
@@ -115,17 +116,17 @@ function App() {
             {/* Logo */}
             <div className="flex-shrink-0">
               <h1 className="text-2xl font-bold bg-gradient-to-r from-brand-orange to-orange-500 bg-clip-text text-transparent">
-                SpoolID
+                SpoolID AI
               </h1>
             </div>
 
             {/* Desktop Nav Links */}
             <div className="hidden md:flex space-x-8">
-              <a href="#features" className="text-gray-300 hover:text-white transition-colors">
-                Features
+              <a href="#progetto" className="text-gray-300 hover:text-white transition-colors">
+                Il Progetto
               </a>
-              <a href="#how-it-works" className="text-gray-300 hover:text-white transition-colors">
-                How it works
+              <a href="#upload" className="text-gray-300 hover:text-white transition-colors">
+                Come Contribuire
               </a>
               <a href="#faq" className="text-gray-300 hover:text-white transition-colors">
                 FAQ
@@ -134,8 +135,8 @@ function App() {
 
             {/* CTA Button */}
             <div className="hidden md:block">
-              <a href="#waitlist" className="btn-secondary">
-                Join Beta - Limited Spots
+              <a href={GOOGLE_FORM_UPLOAD_URL} target="_blank" rel="noreferrer" className="btn-secondary">
+                Carica il tuo Video
               </a>
             </div>
 
@@ -156,18 +157,18 @@ function App() {
           <div className="md:hidden bg-gray-900 border-t border-gray-800">
             <div className="px-4 pt-2 pb-3 space-y-1">
               <a
-                href="#features"
+                href="#progetto"
                 className="block px-3 py-2 text-gray-300 hover:text-white transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Features
+                Il Progetto
               </a>
               <a
-                href="#how-it-works"
+                href="#upload"
                 className="block px-3 py-2 text-gray-300 hover:text-white transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                How it works
+                Come Contribuire
               </a>
               <a
                 href="#faq"
@@ -177,11 +178,12 @@ function App() {
                 FAQ
               </a>
               <a
-                href="#waitlist"
-                className="block px-3 py-2 text-brand-blue hover:text-white transition-colors"
+                href={GOOGLE_FORM_UPLOAD_URL}
+                target="_blank" rel="noreferrer"
+                className="block px-3 py-2 text-brand-orange hover:text-white transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Join Beta
+                Carica il tuo Video
               </a>
             </div>
           </div>
@@ -194,58 +196,35 @@ function App() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <div className="inline-block px-3 py-1 bg-brand-blue/10 border border-brand-blue/30 rounded-full mb-4">
-                <p className="text-brand-blue font-semibold text-sm">🚀 Launching Soon - Beta Access Available</p>
+                <p className="text-brand-blue font-semibold text-sm">🔬 Ricerca AI in Corso - Contribuisci al Dataset</p>
               </div>
 
               <h2 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-                Save <span className="text-brand-orange">€200+</span> in wasted filament every month
+                Stimare il filamento residuo da una <span className="text-brand-orange">semplice foto</span>.
               </h2>
               <p className="text-xl text-gray-400 mb-8 leading-relaxed">
-                Track <span className="text-brand-orange font-semibold">unlimited spools</span> with{' '}
-                <span className="text-brand-blue font-semibold">NFC Tags</span> and{' '}
-                <span className="text-brand-blue font-semibold">Real Weight</span>.
-                Setup in under <strong className="text-white">2 minutes</strong>. Works with <strong className="text-white">50+ brands</strong>.
+                Stiamo sviluppando un modello di Intelligenza Artificiale rivoluzionario per i maker.
+                Abbiamo bisogno di <span className="text-brand-orange font-semibold">migliaia di video</span> di bobine per addestrare il nostro algoritmo. Ti bastano <strong className="text-white">60 secondi</strong> per contribuire.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center mb-6">
-                <a href="#waitlist" className="btn-primary inline-block">
-                  Get Early Access - Limited Spots
+                <a href="#upload" className="btn-primary inline-block">
+                  Scopri come contribuire
                 </a>
                 <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <Users size={18} className="text-brand-orange" />
-                  <span><strong className="text-white">{makerCount}</strong> makers already joined</span>
+                  <Upload size={18} className="text-brand-orange" />
+                  <span><strong className="text-white">{makerCount}</strong> video già raccolti</span>
                 </div>
               </div>
             </div>
 
-            {/* Hero Visual Mockup - SpoolID App */}
+            {/* Hero Visual Mockup */}
             <div className="relative">
-              <img
-                src="/images/hero-app-screenshot.jpg"
-                alt="SpoolID app interface showing PLA Red filament at 342g with progress bar and spool tracking"
-                className="w-full h-auto rounded-2xl shadow-2xl"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonial Section */}
-      <section className="py-12 px-4 border-y border-gray-800 bg-gray-900/30">
-        <div className="max-w-4xl mx-auto text-center">
-          <p className="text-2xl text-gray-300 italic leading-relaxed">
-            "Finally, no more failed prints because I ran out of filament! SpoolID saved me hours and hundreds of euros."
-          </p>
-          <div className="flex items-center justify-center gap-3 mt-6">
-            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center p-1.5 shadow-lg">
-              <img
-                src="/images/strd-logo.png"
-                alt="STRD 3D Lab logo"
-                className="w-full h-full object-contain"
-              />
-            </div>
-            <div className="text-left">
-              <p className="text-white font-semibold">Antonio</p>
-              <p className="text-sm text-gray-500">STRD 3D Lab, Avellino</p>
+              {/* Qui potresti mettere un'immagine mock up di come l'AI riconosce la bobina */}
+              <div className="w-full aspect-[4/3] bg-gray-800 rounded-2xl shadow-2xl relative overflow-hidden border border-gray-700 flex items-center justify-center group flex-col">
+                <div className="absolute inset-0 bg-gradient-to-tr from-brand-orange/20 to-brand-blue/20 opacity-30"></div>
+                <BrainCircuit size={80} className="text-brand-blue mb-4 opacity-80" />
+                <p className="text-gray-400 font-medium">Modello AI in fase di addestramento</p>
+              </div>
             </div>
           </div>
         </div>
@@ -256,81 +235,60 @@ function App() {
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
-              <div className="text-4xl font-bold text-brand-orange mb-2">50+</div>
-              <div className="text-sm text-gray-400">Brands Supported</div>
+              <div className="text-4xl font-bold text-brand-orange mb-2">10.000+</div>
+              <div className="text-sm text-gray-400">Video Necessari Obiettivo</div>
             </div>
             <div>
-              <div className="text-4xl font-bold text-brand-blue mb-2">2min</div>
-              <div className="text-sm text-gray-400">Quick Setup</div>
+              <div className="text-4xl font-bold text-brand-blue mb-2">100%</div>
+              <div className="text-sm text-gray-400">Open Source Approach</div>
             </div>
             <div>
-              <div className="text-4xl font-bold text-brand-orange mb-2">€0.10</div>
-              <div className="text-sm text-gray-400">Cost per Tag</div>
+              <div className="text-4xl font-bold text-brand-orange mb-2">Qualsiasi</div>
+              <div className="text-sm text-gray-400">Marca Supportata</div>
             </div>
             <div>
-              <div className="text-4xl font-bold text-brand-blue mb-2">1g</div>
-              <div className="text-sm text-gray-400">Precision</div>
+              <div className="text-4xl font-bold text-brand-blue mb-2">60 sec</div>
+              <div className="text-sm text-gray-400">Tempo per contribuire</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Problem Section */}
-      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-900/30">
+      <section id="progetto" className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-900/30">
         <div className="max-w-7xl mx-auto">
           <h2 className="section-title text-center mb-16">
-            Why Spreadsheets & Slicers Fail
+            Il Problema: Perché serve l'AI?
           </h2>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {/* Card 1 - Failed Print Image */}
             <div className="card-glow text-center">
-              {/* Real image of failed print */}
-              <img
-                src="/images/failed-print.jpg"
-                alt="Failed 3D print - filament ran out mid-print"
-                className="w-full h-48 object-cover rounded-lg mb-4"
-              />
               <div className="inline-block p-4 bg-red-500/10 rounded-full mb-4">
                 <AlertTriangle size={40} className="text-red-500" />
               </div>
-              <h3 className="text-2xl font-bold mb-3">Slicers Lie</h3>
+              <h3 className="text-2xl font-bold mb-3">Slicers Inaffidabili</h3>
               <p className="text-gray-400">
-                Theoretical estimates drift over time. You end up with failed prints due to runouts.
+                Le stime di chiusura dei software di slicer si basano su calcoli teorici. Spesso e volentieri si sbagliano e le stampe falliscono a metà.
               </p>
             </div>
 
-            {/* Card 2 - Spreadsheet Image */}
             <div className="card-glow text-center">
-              {/* Real image of Excel spreadsheet */}
-              <img
-                src="/images/spreadsheet.jpg"
-                alt="Complex Excel spreadsheet for filament inventory tracking"
-                className="w-full h-48 object-cover rounded-lg mb-4"
-              />
               <div className="inline-block p-4 bg-yellow-500/10 rounded-full mb-4">
                 <FileSpreadsheet size={40} className="text-yellow-500" />
               </div>
-              <h3 className="text-2xl font-bold mb-3">Spreadsheets are Slow</h3>
+              <h3 className="text-2xl font-bold mb-3">Pesare è una noia</h3>
               <p className="text-gray-400">
-                Manual entry kills productivity. You need something instant.
+                Pesare costantemente le bobine e segnare i grammi usa-e-getta su un foglio excel ruba la magia della stampa 3D.
               </p>
             </div>
 
-            {/* Card 3 - Spool Pile Image */}
             <div className="card-glow text-center">
-              {/* Real image of stacked filament spools */}
-              <img
-                src="/images/spool-pile.jpg"
-                alt="Stack of partially-used filament spools - the graveyard of spools"
-                className="w-full h-48 object-cover rounded-lg mb-4"
-              />
-              <div className="inline-block p-4 bg-purple-500/10 rounded-full mb-4">
-                <Ghost size={40} className="text-purple-500" />
+              <div className="inline-block p-4 bg-brand-blue/10 rounded-full mb-4">
+                <BrainCircuit size={40} className="text-brand-blue" />
               </div>
-              <h3 className="text-2xl font-bold mb-3">The Graveyard of Spools</h3>
+              <h3 className="text-2xl font-bold mb-3">La Soluzione AI</h3>
               <p className="text-gray-400">
-                You have dozens of partial spools but don't know if they are enough for the next print.
+                Immagina di scattare una semplice foto alla bobina e avere l'app che ti dice subito: "Rimangono circa 120 grammi". È questo che stiamo costruendo.
               </p>
             </div>
           </div>
@@ -338,153 +296,68 @@ function App() {
       </section>
 
       {/* Solution / How it Works */}
-      <section id="how-it-works" className="py-20 px-4 sm:px-6 lg:px-8">
+      <section id="upload" className="py-20 px-4 sm:px-6 lg:px-8 border-y border-gray-800">
         <div className="max-w-7xl mx-auto">
           <h2 className="section-title text-center mb-16">
-            Precision Inventory in 3 Steps
+            Come puoi aiutarci a costruire il dataset
           </h2>
 
           <div className="grid md:grid-cols-3 gap-12">
-            {/* Step 1 - NFC Tag Image */}
+            {/* Step 1 */}
             <div className="text-center">
-              {/* Real image of NFC tag on filament bag */}
-              <img
-                src="/images/nfc-tag.jpg"
-                alt="NFC tag on filament bag - finger touching the tag"
-                className="w-full h-56 object-cover rounded-lg mb-6"
-              />
-              <div className="relative mb-6 -mt-12">
+              <div className="relative mb-6">
                 <div className="inline-block p-6 bg-gradient-to-br from-brand-orange to-orange-600 rounded-2xl shadow-xl">
-                  <Tag size={48} className="text-white" />
+                  <Camera size={48} className="text-white" />
                 </div>
-                <div className="absolute -top-2 -right-2 w-10 h-10 bg-brand-blue rounded-full flex items-center justify-center font-bold text-xl shadow-lg">
+                <div className="absolute -top-2 right-[30%] w-10 h-10 bg-brand-blue rounded-full flex items-center justify-center font-bold text-xl shadow-lg">
                   1
                 </div>
               </div>
-              <h3 className="text-2xl font-bold mb-3">Tag It</h3>
+              <h3 className="text-2xl font-bold mb-3">Prendi la Bobina</h3>
               <p className="text-gray-400">
-                Stick a cheap NFC tag on your filament bag or spool.
+                Prendi una bobina di qualsiasi marca, preferibilmente mezza usata.
               </p>
             </div>
 
-            {/* Step 2 - Spool on Scale Image */}
+            {/* Step 2 */}
             <div className="text-center">
-              {/* Real image of spool on kitchen scale */}
-              <img
-                src="/images/spool-scale.jpg"
-                alt="Filament spool on digital kitchen scale showing weight measurement"
-                className="w-full h-56 object-cover rounded-lg mb-6"
-              />
-              <div className="relative mb-6 -mt-12">
+              <div className="relative mb-6">
                 <div className="inline-block p-6 bg-gradient-to-br from-brand-orange to-orange-600 rounded-2xl shadow-xl">
-                  <Scale size={48} className="text-white" />
+                  <Play size={48} className="text-white" />
                 </div>
-                <div className="absolute -top-2 -right-2 w-10 h-10 bg-brand-blue rounded-full flex items-center justify-center font-bold text-xl shadow-lg">
+                <div className="absolute -top-2 right-[30%] w-10 h-10 bg-brand-blue rounded-full flex items-center justify-center font-bold text-xl shadow-lg">
                   2
                 </div>
               </div>
-              <h3 className="text-2xl font-bold mb-3">Weigh It</h3>
+              <h3 className="text-2xl font-bold mb-3">Gira un breve video</h3>
               <p className="text-gray-400">
-                Place the spool on any kitchen scale after printing.
+                Tienila in mano e ruotala lentamente davanti alla fotocamera del telefono per 10-15 secondi. Mostra bene i lati e il centro.
               </p>
             </div>
 
-            {/* Step 3 - Scan */}
+            {/* Step 3 */}
             <div className="text-center">
-              <img
-                src="/images/phone-scanning.jpg"
-                alt="Hand holding phone scanning NFC tag on red PLA filament spool with SpoolID app showing 342g"
-                className="w-full h-56 object-cover rounded-lg mb-6"
-              />
-              <div className="relative mb-6 -mt-12">
+              <div className="relative mb-6">
                 <div className="inline-block p-6 bg-gradient-to-br from-brand-orange to-orange-600 rounded-2xl shadow-xl">
-                  <Smartphone size={48} className="text-white" />
+                  <Upload size={48} className="text-white" />
                 </div>
-                <div className="absolute -top-2 -right-2 w-10 h-10 bg-brand-blue rounded-full flex items-center justify-center font-bold text-xl shadow-lg">
+                <div className="absolute -top-2 right-[30%] w-10 h-10 bg-brand-blue rounded-full flex items-center justify-center font-bold text-xl shadow-lg">
                   3
                 </div>
               </div>
-              <h3 className="text-2xl font-bold mb-3">Scan It</h3>
+              <h3 className="text-2xl font-bold mb-3">Carica il File</h3>
               <p className="text-gray-400">
-                Tap with your phone. The app subtracts the empty spool weight automatically.
+                Clicca sul pulsante qui sotto per inviarci il video tramite il nostro modulo sicuro di Google Drive.
               </p>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Secret Sauce */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-900/30">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="card-glow">
-            <div className="inline-block p-4 bg-gradient-to-br from-brand-blue to-cyan-600 rounded-full mb-6">
-              <Database size={48} className="text-white" />
-            </div>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-brand-blue to-cyan-400 bg-clip-text text-transparent">
-              We know your spool's weight.
-            </h2>
-            <p className="text-xl text-gray-300 leading-relaxed mb-6">
-              Our <span className="text-brand-blue font-semibold">Master Database</span> contains
-              empty spool tare weights for hundreds of brands (Sunlu, eSun, Polymaker, and more).
-              We do the math so you get the real filament weight.
-            </p>
-            {/* Brand logos grid */}
-            <img
-              src="/images/brand-logos.png"
-              alt="Supported filament brands: SUNLU, eSUN, Polymaker, Prusament, HATCHBOX, OVERTURE, Amolen, ERYONE, CREALITY, MatterHackers"
-              className="w-full max-w-3xl mx-auto rounded-lg"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* What You'll Get Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="section-title text-center mb-16">
-            What You'll Get as a Beta User
-          </h2>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="flex gap-4 p-6 bg-gray-900/50 rounded-xl border border-gray-800">
-              <div className="flex-shrink-0">
-                <Award className="text-brand-orange" size={32} />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold mb-2">Early Access</h3>
-                <p className="text-gray-400">Be among the first to use SpoolID before public launch</p>
-              </div>
-            </div>
-
-            <div className="flex gap-4 p-6 bg-gray-900/50 rounded-xl border border-gray-800">
-              <div className="flex-shrink-0">
-                <Zap className="text-brand-orange" size={32} />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold mb-2">3 Months PRO Free</h3>
-                <p className="text-gray-400">Full access to premium features worth €30</p>
-              </div>
-            </div>
-
-            <div className="flex gap-4 p-6 bg-gray-900/50 rounded-xl border border-gray-800">
-              <div className="flex-shrink-0">
-                <Users className="text-brand-blue" size={32} />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold mb-2">Shape the Product</h3>
-                <p className="text-gray-400">Direct input on features we build next</p>
-              </div>
-            </div>
-
-            <div className="flex gap-4 p-6 bg-gray-900/50 rounded-xl border border-gray-800">
-              <div className="flex-shrink-0">
-                <CheckCircle2 className="text-brand-blue" size={32} />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold mb-2">Priority Support</h3>
-                <p className="text-gray-400">Get help faster with dedicated beta support</p>
-              </div>
-            </div>
+          <div className="mt-16 text-center">
+            <a href={GOOGLE_FORM_UPLOAD_URL} target="_blank" rel="noreferrer" className="btn-primary inline-flex items-center gap-2 text-lg px-8 py-4">
+              <Upload size={24} />
+              Vai al Form per caricare il tuo Video
+            </a>
+            <p className="text-sm text-gray-500 mt-4">Richiede accesso rapido a Google per l'invio su Drive.</p>
           </div>
         </div>
       </section>
@@ -493,7 +366,7 @@ function App() {
       <section id="faq" className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-900/30">
         <div className="max-w-3xl mx-auto">
           <h2 className="section-title text-center mb-16">
-            Frequently Asked Questions
+            FAQ relative al Dataset
           </h2>
 
           <div className="space-y-4">
@@ -520,60 +393,40 @@ function App() {
         </div>
       </section>
 
-      {/* Footer / CTA */}
-      <section id="waitlist" className="py-20 px-4 sm:px-6 lg:px-8">
+      {/* Footer / Newsletter */}
+      <section id="newsletter" className="py-20 px-4 sm:px-6 lg:px-8 border-t border-gray-800">
         <div className="max-w-3xl mx-auto text-center">
-          <div className="inline-block px-4 py-2 bg-brand-orange/10 border border-brand-orange/30 rounded-full mb-6">
-            <p className="text-brand-orange font-semibold text-sm">⚡ LIMITED BETA - Only 300 Spots Available</p>
+          <div className="inline-block p-4 bg-gradient-to-br from-brand-blue to-cyan-600 rounded-full mb-6">
+            <Database size={40} className="text-white" />
           </div>
 
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Launch your Farm into the future.
+          <h2 className="text-4xl font-bold mb-4">
+            Segui l'addestramento dell'AI
           </h2>
           <p className="text-xl text-gray-400 mb-8">
-            Join the waitlist to get <span className="text-brand-orange font-semibold">3 months of PRO plan</span> for free.
+            Non vuoi caricare un video ora ma sei curioso? Lascia la tua email.
+            <br className="hidden md:block" /> Ti aggiorneremo sui risultati della ricerca e sul lancio del modello.
           </p>
-
-          {/* Progress Bar */}
-          <div className="max-w-xl mx-auto mb-8">
-            <div className="flex justify-between text-sm mb-2">
-              <span className="text-gray-400">Beta spots filled</span>
-              <span className="text-brand-orange font-semibold">
-                {makerCount}/300
-              </span>
-            </div>
-            <div className="h-3 bg-gray-800 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-brand-orange to-orange-500 transition-all duration-500"
-                style={{ width: `${Math.min((makerCount / 300) * 100, 100)}%` }}
-              />
-            </div>
-          </div>
 
           {submitSuccess ? (
             <div className="max-w-xl mx-auto p-6 bg-green-500/10 border border-green-500/30 rounded-lg">
               <CheckCircle2 size={48} className="text-green-500 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-green-500 mb-3">You're In! 🎉</h3>
-              <p className="text-gray-300 text-lg mb-2">Welcome to the SpoolID Beta!</p>
-              <p className="text-gray-400 mb-6">Check your email for next steps.</p>
-              <div className="mt-4 p-4 bg-gradient-to-r from-brand-orange/10 to-brand-blue/10 border border-brand-orange/30 rounded-lg max-w-md mx-auto">
-                <p className="text-sm text-gray-200 font-medium mb-1">📧 Quick favor: What's your most-used filament brand?</p>
-                <p className="text-xs text-gray-400">Reply to the email and let us know!</p>
-              </div>
+              <h3 className="text-2xl font-bold text-green-500 mb-3">Iscrizione confermata! 🎉</h3>
+              <p className="text-gray-300 text-lg mb-2">Ti terremo aggiornato sui progressi di SpoolID AI.</p>
             </div>
           ) : (
             <>
-              <form onSubmit={handleWaitlistSubmit} className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto mb-6">
-                {/* Web3Forms Auto-Reply Configuration - See AUTO_REPLY_SETUP.md */}
-                <input type="hidden" name="subject" value="New SpoolID Beta Signup 🎯" />
-                <input type="hidden" name="from_name" value="SpoolID Beta" />
+              <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto mb-6">
+                {/* Web3Forms Auto-Reply Configuration */}
+                <input type="hidden" name="subject" value="Iscrizione Notizie SpoolID AI" />
+                <input type="hidden" name="from_name" value="SpoolID AI" />
 
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email address"
+                  placeholder="La tua email"
                   className="flex-1 px-6 py-4 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-brand-orange transition-colors"
                   disabled={isSubmitting}
                 />
@@ -582,39 +435,30 @@ function App() {
                   className="btn-primary whitespace-nowrap"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Joining...' : 'Secure Your Spot'}
+                  {isSubmitting ? 'Iscrizione...' : 'Resta Aggiornato'}
                 </button>
               </form>
 
-              {/* Trust Badges */}
+              {/* Privacy Badges */}
               <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-500 mb-4">
                 <div className="flex items-center gap-2">
                   <Lock size={16} className="text-gray-600" />
-                  <span>Your email is safe</span>
+                  <span>Nessuno spam</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Zap size={16} className="text-gray-600" />
-                  <span>100% free to join</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CreditCard size={16} className="text-gray-600" />
-                  <span>No credit card required</span>
+                  <span>Solo aggiornamenti utili</span>
                 </div>
               </div>
             </>
           )}
-
-          <p className="text-sm text-gray-500 mt-4">
-            <Users size={14} className="inline mr-1" />
-            Join <strong className="text-white">{makerCount} makers</strong> who already secured their spot
-          </p>
         </div>
       </section>
 
       {/* Footer */}
       <footer className="border-t border-gray-800 py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center text-gray-500">
-          <p>&copy; 2026 SpoolID. Built for makers, by makers.</p>
+          <p>&copy; 2026 SpoolID AI Research. Project by Makers per i Makers.</p>
         </div>
       </footer>
     </div>
