@@ -57,6 +57,21 @@ function doPost(e) {
             return respondSuccess("Email salvata con successo.");
         }
 
+        // --- AZIONE 1b: Solo notifica email (dopo upload diretto su Drive via Vercel) ---
+        else if (action === "notify_upload") {
+            var notifyName = payload.fileName || "sconosciuto";
+            try {
+                MailApp.sendEmail({
+                    to: NOTIFICATION_EMAIL,
+                    subject: "📼 SpoolID AI: Nuovo Video Ricevuto per il Dataset!",
+                    body: "Ottimo lavoro!\n\nQualcuno ha appena caricato un nuovo video.\nNome file: " + notifyName + "\nData: " + new Date().toLocaleString()
+                });
+            } catch (mailError) {
+                console.error("Errore invio notifica: " + mailError);
+            }
+            return respondSuccess("Notifica inviata.");
+        }
+
         // --- AZIONE 2: Upload Video (LEGACY – singolo chunk) ---
         // Mantenuto per compatibilità con eventuali client vecchi
         else if (action === "upload_video") {

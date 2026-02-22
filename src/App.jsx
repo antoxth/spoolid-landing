@@ -153,83 +153,75 @@ function App({ lang = 'en' }) {
   const handleVideoUpload = async () => {
     if (!videoFile) return
     setIsUploading(true)
-    setUploadPhase('reading')
+    setUploadPhase('uploading')    // single phase — real upload progress from 0→100%
     setReadProgress(0)
     setUploadStatus(null)
-    setUploadErrorDetail("")
-
-    // Safe base64 converter: avoids stack overflow (apply limit) and O(n²)
-    // string concat on iOS Safari. Uses 8KB mini-batches with apply().
-    const toBase64 = (uint8Slice) => {
-      const MINI = 8192 // 8 KB — well within iOS call-stack limits
-      let binary = ''
-      for (let i = 0; i < uint8Slice.length; i += MINI) {
-        binary += String.fromCharCode.apply(null, uint8Slice.subarray(i, i + MINI))
-      }
-      return btoa(binary)
-    }
+    setUploadErrorDetail('')
 
     try {
-      // --- CHUNKED UPLOAD (memory-safe for Android & iOS) ---
-      // 1.5 MB per chunk: small enough to stay under Safari's per-request limits
-      // while still efficient (a 30 MB file = ~20 sequential requests).
-      const CHUNK_SIZE = 4 * 1024 * 1024 // 4 MB — fewer round-trips to Apps Script
-
-      const arrayBuffer = await new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onprogress = (e) => {
-          if (e.lengthComputable) setReadProgress(Math.round((e.loaded / e.total) * 100))
-        }
-        reader.onload = (e) => resolve(e.target.result)
-        reader.onerror = reject
-        reader.readAsArrayBuffer(videoFile)
+      // ─── Step 1: Create a resumable upload session on Google Drive ───────────
+      const initRes = await fetch('/api/initiate-upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName: videoFile.name || 'video.mp4',
+          mimeType: videoFile.type || 'video/mp4',
+          fileSize: videoFile.size,
+        }),
       })
 
-      setUploadPhase('uploading')
+      if (!initRes.ok) {
+        const err = await initRes.json().catch(() => ({}))
+        throw new Error(err.error || `initiate-upload HTTP ${initRes.status}`)
+      }
+      const { uploadUrl } = await initRes.json()
 
-      const uint8 = new Uint8Array(arrayBuffer)
-      const totalChunks = Math.ceil(uint8.length / CHUNK_SIZE)
-      const uploadId = Date.now().toString(36) + Math.random().toString(36).slice(2)
-      const fileName = videoFile.name || 'android_video.mp4'
-      const mimeType = videoFile.type || 'video/mp4'
+      // ─── Step 2: Upload file in 3 MB binary chunks ────────────────────────────
+      // 3 MB stays under Vercel's 4.5 MB body limit with room for headers.
+      const CHUNK_SIZE = 3 * 1024 * 1024
+      const totalSize = videoFile.size
+      let offset = 0
 
-      for (let i = 0; i < totalChunks; i++) {
-        const slice = uint8.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
-        const chunkBase64 = toBase64(slice)
+      while (offset < totalSize) {
+        const slice = videoFile.slice(offset, Math.min(offset + CHUNK_SIZE, totalSize))
+        const arrayBuffer = await slice.arrayBuffer()
 
-        const response = await fetch(APPS_SCRIPT_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            action: 'upload_chunk',
-            uploadId,
-            fileName,
-            mimeType,
-            chunkIndex: i,
-            totalChunks,
-            chunkData: chunkBase64
-          })
+        const chunkRes = await fetch('/api/upload-chunk', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/octet-stream',
+            'x-upload-url': uploadUrl,
+            'x-range-start': offset.toString(),
+            'x-total-size': totalSize.toString(),
+            'x-mime-type': videoFile.type || 'video/mp4',
+          },
+          body: arrayBuffer,
         })
 
-        const rawText = await response.text()
-        let data
-        try {
-          data = JSON.parse(rawText)
-        } catch {
-          throw new Error(`Google Server Error (HTTP ${response.status}): ${rawText.substring(0, 200)}`)
+        if (!chunkRes.ok) {
+          const err = await chunkRes.json().catch(() => ({}))
+          throw new Error(err.error || `upload-chunk HTTP ${chunkRes.status}`)
         }
 
-        if (data.status !== 'success' && data.status !== 'chunk_ok') {
-          throw new Error(data.message || `Chunk ${i + 1}/${totalChunks} failed`)
-        }
+        const chunkData = await chunkRes.json()
+        offset += slice.size
+        setReadProgress(Math.min(Math.round((offset / totalSize) * 100), 99))
 
-        if (i === totalChunks - 1 && data.status === 'success') {
-          setUploadPhase('success')
+        // Last chunk confirmed by Google
+        if (chunkData.status === 'success') {
+          setReadProgress(100)
+          // Fire-and-forget: notify Apps Script for email alert
+          fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: 'notify_upload', fileName: videoFile.name }),
+          }).catch(console.error)
+
           setUploadStatus('success')
+          setUploadPhase('success')
           setVideoFile(null)
         }
       }
-
     } catch (err) {
       console.error('Upload Error:', err)
       setUploadStatus('error')
@@ -529,34 +521,18 @@ function App({ lang = 'en' }) {
 
                   {isUploading ? (
                     <div className="w-full">
-                      {uploadPhase === 'reading' && (
-                        <>
-                          <div className="flex justify-between text-sm mb-2 text-gray-400">
-                            <span>{t.uploaderPhase1}</span>
-                            <span>{readProgress}%</span>
-                          </div>
-                          <div className="w-full bg-gray-700 rounded-full h-2 shadow-inner overflow-hidden">
-                            <div className="bg-brand-orange h-2 rounded-full transition-all duration-150 ease-out" style={{ width: `${readProgress}%` }}></div>
-                          </div>
-                        </>
-                      )}
-
                       {uploadPhase === 'uploading' && (
                         <>
                           <div className="flex justify-between text-sm mb-2 text-gray-400">
                             <span>{t.uploaderPhase2}</span>
-                            <span className="animate-pulse">{t.uploaderWait}</span>
+                            <span className="font-mono">{readProgress}%</span>
                           </div>
-                          <div className="w-full bg-gray-700 rounded-full h-2 shadow-inner overflow-hidden relative">
-                            <div className="w-1/3 bg-brand-orange h-full rounded-full absolute animate-[loader_1.5s_ease-in-out_infinite]"></div>
+                          <div className="w-full bg-gray-700 rounded-full h-2 shadow-inner overflow-hidden">
+                            <div
+                              className="bg-brand-orange h-2 rounded-full transition-all duration-300 ease-out"
+                              style={{ width: `${readProgress}%` }}
+                            />
                           </div>
-                          <style>{`
-                            @keyframes loader {
-                              0% { left: -33%; }
-                              50% { left: 100%; right: -33%; }
-                              100% { left: -33%; }
-                            }
-                          `}</style>
                         </>
                       )}
                     </div>
@@ -641,11 +617,11 @@ function App({ lang = 'en' }) {
               </p>
             </div>
           </div>
-        </div>
-      </section>
+        </div >
+      </section >
 
       {/* FAQ Section */}
-      <section id="faq" className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-900/30">
+      < section id="faq" className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-900/30" >
         <div className="max-w-3xl mx-auto">
           <h2 className="section-title text-center mb-16">
             {t.faqTitle}
@@ -673,10 +649,10 @@ function App({ lang = 'en' }) {
             ))}
           </div>
         </div>
-      </section>
+      </section >
 
       {/* Footer / Newsletter */}
-      <section id="newsletter" className="py-20 px-4 sm:px-6 lg:px-8 border-t border-gray-800">
+      < section id="newsletter" className="py-20 px-4 sm:px-6 lg:px-8 border-t border-gray-800" >
         <div className="max-w-3xl mx-auto text-center">
           <div className="inline-block p-4 bg-gradient-to-br from-brand-blue to-cyan-600 rounded-full mb-6">
             <Database size={40} className="text-white" />
@@ -731,15 +707,15 @@ function App({ lang = 'en' }) {
             </>
           )}
         </div>
-      </section>
+      </section >
 
       {/* Footer */}
-      <footer className="border-t border-gray-800 py-8 px-4 sm:px-6 lg:px-8">
+      < footer className="border-t border-gray-800 py-8 px-4 sm:px-6 lg:px-8" >
         <div className="max-w-7xl mx-auto text-center text-gray-500">
           <p>{t.footerText}</p>
         </div>
-      </footer>
-    </div>
+      </footer >
+    </div >
   )
 }
 
