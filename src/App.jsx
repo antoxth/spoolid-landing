@@ -25,6 +25,7 @@ function App({ lang = 'en' }) {
   const navigate = useNavigate()
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [langOpen, setLangOpen] = useState(false)
   const [email, setEmail] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
@@ -148,78 +149,77 @@ function App({ lang = 'en' }) {
     setUploadErrorDetail("")
 
     try {
-      const reader = new FileReader()
+      // --- CHUNKED UPLOAD (memory-safe for Android Chrome) ---
+      // Instead of loading the entire file as a data URL (which triples RAM usage),
+      // we read it as a raw ArrayBuffer in one shot, then convert to base64 in
+      // small 4 MB chunks and send each chunk sequentially.
+      const CHUNK_SIZE = 4 * 1024 * 1024 // 4 MB per chunk
 
-      reader.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const percentLoaded = Math.round((event.loaded / event.total) * 100)
-          setReadProgress(percentLoaded)
+      const arrayBuffer = await new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onprogress = (e) => {
+          if (e.lengthComputable) setReadProgress(Math.round((e.loaded / e.total) * 100))
         }
-      }
+        reader.onload = (e) => resolve(e.target.result)
+        reader.onerror = reject
+        reader.readAsArrayBuffer(videoFile)
+      })
 
-      reader.onload = async () => {
-        setUploadPhase('uploading')
-        const base64Data = reader.result
+      setUploadPhase('uploading')
 
-        try {
-          const response = await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'text/plain;charset=utf-8',
-            },
-            body: JSON.stringify({
-              action: 'upload_video',
-              fileName: videoFile.name || 'android_video.mp4',
-              mimeType: videoFile.type || 'video/mp4',
-              fileData: base64Data
-            })
+      const uint8 = new Uint8Array(arrayBuffer)
+      const totalChunks = Math.ceil(uint8.length / CHUNK_SIZE)
+      const uploadId = Date.now().toString(36) + Math.random().toString(36).slice(2)
+      const fileName = videoFile.name || 'android_video.mp4'
+      const mimeType = videoFile.type || 'video/mp4'
+
+      for (let i = 0; i < totalChunks; i++) {
+        const slice = uint8.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
+        // Convert Uint8Array slice to base64 without holding the full file in memory
+        let binary = ''
+        for (let j = 0; j < slice.length; j++) binary += String.fromCharCode(slice[j])
+        const chunkBase64 = btoa(binary)
+
+        const response = await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'upload_chunk',
+            uploadId,
+            fileName,
+            mimeType,
+            chunkIndex: i,
+            totalChunks,
+            chunkData: chunkBase64
           })
+        })
 
-          const rawText = await response.text()
-          let data;
+        const rawText = await response.text()
+        let data
+        try {
+          data = JSON.parse(rawText)
+        } catch {
+          throw new Error(`Google Server Error (HTTP ${response.status}): ${rawText.substring(0, 200)}`)
+        }
 
-          try {
-            data = JSON.parse(rawText)
-          } catch (parseErr) {
-            throw new Error(`Google Server Error (HTTP ${response.status}): ${rawText.substring(0, 150)}...`)
-          }
+        if (data.status !== 'success' && data.status !== 'chunk_ok') {
+          throw new Error(data.message || `Chunk ${i + 1}/${totalChunks} failed`)
+        }
 
-          if (data.status === 'success') {
-            setUploadPhase('success')
-            setUploadStatus('success')
-            setVideoFile(null)
-          } else {
-            throw new Error(data.message || 'Upload failed')
-          }
-        } catch (err) {
-          console.error('Upload API Error:', err)
-          setUploadStatus('error')
-          setUploadPhase('error')
-          setUploadErrorDetail(`Fetch Err: ${err.name} - ${err.message}`)
-        } finally {
-          setIsUploading(false)
+        if (i === totalChunks - 1 && data.status === 'success') {
+          setUploadPhase('success')
+          setUploadStatus('success')
+          setVideoFile(null)
         }
       }
 
-      reader.onerror = (error) => {
-        console.error('File reading error:', error)
-        setUploadStatus('error')
-        setUploadPhase('error')
-        setIsUploading(false)
-        setReadProgress(0)
-        setUploadErrorDetail(`FileReader Err: ${error}`)
-      }
-
-      // Avvia la lettura
-      reader.readAsDataURL(videoFile)
-
-    } catch (error) {
-      console.error('General Upload Error:', error)
+    } catch (err) {
+      console.error('Upload Error:', err)
       setUploadStatus('error')
       setUploadPhase('error')
+      setUploadErrorDetail(`${err.name}: ${err.message}`)
+    } finally {
       setIsUploading(false)
-      setReadProgress(0)
-      setUploadErrorDetail(`General Err: ${error.name} - ${error.message}`)
     }
   }
 
@@ -251,15 +251,30 @@ function App({ lang = 'en' }) {
               </a>
             </div>
 
-            {/* Right side: CTA + Language switcher */}
+            {/* Right side: CTA + Language switcher dropdown */}
             <div className="hidden md:flex items-center gap-4">
-              <button
-                onClick={() => navigate(t.otherLangPath)}
-                className="text-sm text-gray-400 hover:text-white transition-colors"
-                title="Switch language"
-              >
-                {t.otherLangLabel}
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setLangOpen(!langOpen)}
+                  className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1"
+                >
+                  🌐 {t.langCode.toUpperCase()}
+                  <ChevronDown size={14} className={`transition-transform ${langOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {langOpen && (
+                  <div className="absolute right-0 top-8 bg-gray-900 border border-gray-700 rounded-lg shadow-xl py-1 z-50 min-w-[100px]">
+                    {t.otherLangs.map(l => (
+                      <button
+                        key={l.path}
+                        onClick={() => { navigate(l.path); setLangOpen(false) }}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 transition-colors"
+                      >
+                        {l.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               <a href="#upload" className="btn-secondary">
                 {t.navCta}
               </a>
@@ -309,12 +324,15 @@ function App({ lang = 'en' }) {
               >
                 {t.navCta}
               </a>
-              <button
-                onClick={() => { navigate(t.otherLangPath); setMobileMenuOpen(false) }}
-                className="block px-3 py-2 text-gray-400 hover:text-white transition-colors text-sm"
-              >
-                {t.otherLangLabel}
-              </button>
+              {t.otherLangs.map(l => (
+                <button
+                  key={l.path}
+                  onClick={() => { navigate(l.path); setMobileMenuOpen(false) }}
+                  className="block px-3 py-2 text-gray-400 hover:text-white transition-colors text-sm text-left w-full"
+                >
+                  {l.label}
+                </button>
+              ))}
             </div>
           </div>
         )}

@@ -11,6 +11,9 @@ createRoot(document.getElementById('root')).render(
       <Routes>
         <Route path="/" element={<App lang="en" />} />
         <Route path="/it" element={<App lang="it" />} />
+        <Route path="/de" element={<App lang="de" />} />
+        <Route path="/fr" element={<App lang="fr" />} />
+        <Route path="/es" element={<App lang="es" />} />
       </Routes>
     </BrowserRouter>
     <Analytics />

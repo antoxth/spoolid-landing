@@ -1,18 +1,17 @@
 const translations = {
     en: {
-        // Meta
         langCode: 'en',
-        otherLangPath: '/it',
-        otherLangLabel: '🇮🇹 Italiano',
+        otherLangs: [
+            { path: '/it', label: '🇮🇹 IT' },
+            { path: '/de', label: '🇩🇪 DE' },
+            { path: '/fr', label: '🇫🇷 FR' },
+            { path: '/es', label: '🇪🇸 ES' },
+        ],
         htmlLang: 'en',
-
-        // Navbar
         navProject: 'The Project',
         navHelp: 'How to Help',
         navFaq: 'FAQ',
         navCta: 'Upload Your Video',
-
-        // Hero
         heroBadge: '🔬 AI Research in Progress — Contribute to the Dataset',
         heroHeadline1: 'Estimating remaining filament from a',
         heroHeadlineHighlight: 'simple photo',
@@ -24,23 +23,17 @@ const translations = {
         heroSubtitle3: 'to help.',
         heroCta: 'See how to help',
         heroVisualLabel: 'SpoolID AI - Research Project',
-
-        // Stats
         stat1Value: '100%',
         stat1Label: 'Open Source Approach',
         stat2Value: 'Any',
         stat2Label: 'Brand Supported',
-
-        // Problem section
         problemTitle: 'The Problem: Why do we need AI?',
         card1Title: 'Faster Than a Scale',
         card1Body: "The goal is to give you an instant check: no more kitchen scales. Just one photo and you'll know how much material you have left.",
         card2Title: 'Weighing Is a Pain',
         card2Body: 'Constantly weighing spools and logging grams on a spreadsheet takes the magic out of 3D printing.',
         card3Title: 'The AI Solution',
-        card3Body: 'Imagine taking a simple photo of your spool and the app immediately tells you: "About 120 grams remaining." That\'s what I\'m building.',
-
-        // How to help
+        card3Body: "Imagine taking a simple photo of your spool and the app immediately tells you: \"About 120 grams remaining.\" That's what I'm building.",
         helpTitle: 'How can you help me build the dataset?',
         step1Title: 'Grab a Spool',
         step1Body: 'Pick any spool of any brand — preferably one that is half used.',
@@ -48,8 +41,6 @@ const translations = {
         step2Body: 'Hold it and slowly rotate it in front of your phone camera for 10–15 seconds. Show the sides and the center clearly.',
         step3Title: 'Upload the File',
         step3Body: 'Select the file below. I guarantee complete anonymity.',
-
-        // Uploader
         uploaderDropTitle: 'Drag your video here or click to browse',
         uploaderDropSubtitle: 'MP4, MOV, WebM — Max 40MB',
         uploaderPhase1: 'Step 1/2: Reading local video file...',
@@ -58,7 +49,7 @@ const translations = {
         uploaderSendBtn: 'Submit Video to Dataset',
         uploaderSuccessTitle: 'Upload complete!',
         uploaderSuccessBody: 'Thank you so much for your contribution. Would you like to receive an email when the AI model is ready?',
-        uploaderEmailSubscribed: 'Subscribed! I\'ll keep you posted on the progress.',
+        uploaderEmailSubscribed: "Subscribed! I'll keep you posted on the progress.",
         uploaderEmailPlaceholder: 'Your email',
         uploaderEmailBtn: 'Keep Me Updated',
         uploaderEmailBtnLoading: 'Sending...',
@@ -71,29 +62,13 @@ const translations = {
         uploaderTooBig: (mb) => `File too large (${mb} MB). Google accepts files up to 40MB. Try recording a shorter video or lowering the resolution (e.g. 1080p instead of 4K).`,
         uploaderBadFormat: (name) => `The format of the file (${name || 'unknown'}) does not appear to be a standard video. Please try again.`,
         newsletterError: "Subscription error. Please try again.",
-
-        // FAQ
         faqTitle: 'Dataset FAQ',
         faqs: [
-            {
-                q: 'What is the video for?',
-                a: "I use the video to extract multiple angles of your spool. This data (dataset) will be fed to an AI model to teach it to estimate how much filament is left based purely on visual analysis."
-            },
-            {
-                q: 'Can I participate with any filament brand?',
-                a: "Absolutely! The more brands, colors, and sizes we collect, the more accurate and universal the AI model will become."
-            },
-            {
-                q: 'Are my personal data and videos safe?',
-                a: "Yes. Videos uploaded through the form go directly to my secure storage (Google Drive). They will be used exclusively for research purposes and will not be shared or sold."
-            },
-            {
-                q: 'What happens after I leave my email?',
-                a: "I will use your email solely to send you monthly updates (no spam!) on the progress of my AI research and the eventual release of the final app."
-            }
+            { q: 'What is the video for?', a: "I use the video to extract multiple angles of your spool. This data will be fed to an AI model to teach it to estimate how much filament is left based purely on visual analysis." },
+            { q: 'Can I participate with any filament brand?', a: "Absolutely! The more brands, colors, and sizes we collect, the more accurate and universal the AI model will become." },
+            { q: 'Are my personal data and videos safe?', a: "Yes. Videos go directly to my secure Google Drive storage, used exclusively for research and never shared or sold." },
+            { q: 'What happens after I leave my email?', a: "I will use your email solely to send you monthly updates (no spam!) on the progress of my AI research and the eventual release of the final app." }
         ],
-
-        // Newsletter
         newsletterTitle: "Follow the AI Training",
         newsletterSubtitle: "Not ready to upload a video but curious? Leave your email.",
         newsletterSubtitle2: "I'll keep you updated on the research results and the model launch.",
@@ -104,25 +79,22 @@ const translations = {
         newsletterBtnLoading: 'Subscribing...',
         newsletterNoSpam: 'No spam',
         newsletterUseful: 'Only useful updates',
-
-        // Footer
         footerText: '© 2026 SpoolID AI Research. Project by Makers for Makers.',
     },
 
     it: {
-        // Meta
         langCode: 'it',
-        otherLangPath: '/',
-        otherLangLabel: '🇬🇧 English',
+        otherLangs: [
+            { path: '/', label: '🇬🇧 EN' },
+            { path: '/de', label: '🇩🇪 DE' },
+            { path: '/fr', label: '🇫🇷 FR' },
+            { path: '/es', label: '🇪🇸 ES' },
+        ],
         htmlLang: 'it',
-
-        // Navbar
         navProject: 'Il Progetto',
         navHelp: 'Come Aiutarmi',
         navFaq: 'FAQ',
         navCta: 'Carica il tuo Video',
-
-        // Hero
         heroBadge: '🔬 Ricerca AI in Corso - Contribuisci al Dataset',
         heroHeadline1: 'Stimare il filamento residuo da una',
         heroHeadlineHighlight: 'semplice foto',
@@ -134,23 +106,17 @@ const translations = {
         heroSubtitle3: 'per aiutarmi.',
         heroCta: 'Scopri come aiutare',
         heroVisualLabel: 'SpoolID AI - Progetto di Ricerca',
-
-        // Stats
         stat1Value: '100%',
         stat1Label: 'Open Source Approach',
         stat2Value: 'Qualsiasi',
         stat2Label: 'Marca Supportata',
-
-        // Problem section
         problemTitle: "Il Problema: Perché serve l'AI?",
         card1Title: 'Più veloce della Pesa',
         card1Body: "L'obiettivo è offrirti un controllo immediato: niente più bilance da cucina. Solo uno scatto e sai quanto materiale hai.",
         card2Title: 'Pesare è una noia',
-        card2Body: 'Pesare costantemente le bobine e segnare i grammi usa-e-getta su un foglio excel ruba la magia della stampa 3D.',
+        card2Body: 'Pesare costantemente le bobine e segnare i grammi su un foglio excel ruba la magia della stampa 3D.',
         card3Title: 'La Soluzione AI',
         card3Body: 'Immagina di scattare una semplice foto alla bobina e avere l\'app che ti dice subito: "Rimangono circa 120 grammi". È questo che sto costruendo.',
-
-        // How to help
         helpTitle: 'Come puoi aiutarmi a costruire il dataset',
         step1Title: 'Prendi la Bobina',
         step1Body: 'Prendi una bobina di qualsiasi marca, preferibilmente mezza usata.',
@@ -158,8 +124,6 @@ const translations = {
         step2Body: 'Tienila in mano e ruotala lentamente davanti alla fotocamera del telefono per 10-15 secondi. Mostra bene i lati e il centro.',
         step3Title: 'Carica il File',
         step3Body: 'Seleziona il file qui sotto. Ti garantisco il pieno anonimato.',
-
-        // Uploader
         uploaderDropTitle: 'Trascina qui il tuo video o clicca per sfogliare',
         uploaderDropSubtitle: 'MP4, MOV, WebM - Massimo 40MB',
         uploaderPhase1: 'Fase 1/2: Analisi file video locale...',
@@ -178,32 +142,16 @@ const translations = {
         uploaderPrivacy: 'Nessun account richiesto. Il tuo video viene salvato in totale',
         uploaderPrivacyBold: 'anonimato e sicurezza',
         uploaderPrivacy2: 'sul mio Google Drive di ricerca.',
-        uploaderTooBig: (mb) => `Il file è troppo grande (${mb} MB). Google accetta file fino a 40MB via form. Prova a girare un video più breve o abbassare la risoluzione della fotocamera (es. 1080p invece di 4K).`,
+        uploaderTooBig: (mb) => `Il file è troppo grande (${mb} MB). Google accetta file fino a 40MB. Prova a girare un video più breve o abbassare la risoluzione della fotocamera (es. 1080p invece di 4K).`,
         uploaderBadFormat: (name) => `Il formato del file (${name || 'sconosciuto'}) non sembra un video standard. Riprova.`,
         newsletterError: "Errore durante l'iscrizione. Riprova.",
-
-        // FAQ
         faqTitle: 'FAQ relative al Dataset',
         faqs: [
-            {
-                q: "A cosa serve il video che devo caricare?",
-                a: "Il video mi serve per estrarre diverse angolazioni della tua bobina. Questi dati (dataset) verranno 'dati in pasto' a un modello di Intelligenza Artificiale per insegnargli a stimare quanto filamento è rimasto basandosi puramente sull'analisi visiva."
-            },
-            {
-                q: "Posso partecipare con qualsiasi marca di filamento?",
-                a: "Assolutamente sì! Più marche, colori e dimensioni diverse raccogliamo, più il modello AI diventerà preciso e universale."
-            },
-            {
-                q: "I miei dati personali e video sono al sicuro?",
-                a: "Sì, i video caricati tramite il form finiranno direttamente nel mio spazio di archiviazione protetto (Google Drive). Verranno utilizzati esclusivamente a scopo di ricerca e non verranno condivisi o venduti."
-            },
-            {
-                q: "Cosa succede dopo aver lasciato la mail?",
-                a: "Utilizzerò la tua email esclusivamente per tenerti aggiornato mensilmente (nessun blocco di spam!) sui progressi della mia ricerca AI e sull'eventuale rilascio dell'applicazione finale."
-            }
+            { q: "A cosa serve il video che devo caricare?", a: "Il video mi serve per estrarre diverse angolazioni della tua bobina. Questi dati verranno 'dati in pasto' a un modello AI per insegnargli a stimare quanto filamento è rimasto dall'analisi visiva." },
+            { q: "Posso partecipare con qualsiasi marca di filamento?", a: "Assolutamente sì! Più marche, colori e dimensioni diverse raccogliamo, più il modello AI diventerà preciso e universale." },
+            { q: "I miei dati personali e video sono al sicuro?", a: "Sì, i video finiranno direttamente nel mio Google Drive protetto, usati solo per ricerca e mai condivisi o venduti." },
+            { q: "Cosa succede dopo aver lasciato la mail?", a: "Utilizzerò la tua email esclusivamente per tenerti aggiornato mensilmente (nessun blocco di spam!) sui progressi della ricerca AI e sul rilascio dell'app finale." }
         ],
-
-        // Newsletter
         newsletterTitle: "Segui l'addestramento dell'AI",
         newsletterSubtitle: "Non vuoi caricare un video ora ma sei curioso? Lascia la tua email.",
         newsletterSubtitle2: "Ti aggiorneremo sui risultati della ricerca e sul lancio del modello.",
@@ -214,9 +162,256 @@ const translations = {
         newsletterBtnLoading: 'Iscrizione...',
         newsletterNoSpam: 'Nessuno spam',
         newsletterUseful: 'Solo aggiornamenti utili',
-
-        // Footer
         footerText: '© 2026 SpoolID AI Research. Project by Makers per i Makers.',
+    },
+
+    de: {
+        langCode: 'de',
+        otherLangs: [
+            { path: '/', label: '🇬🇧 EN' },
+            { path: '/it', label: '🇮🇹 IT' },
+            { path: '/fr', label: '🇫🇷 FR' },
+            { path: '/es', label: '🇪🇸 ES' },
+        ],
+        htmlLang: 'de',
+        navProject: 'Das Projekt',
+        navHelp: 'Wie helfen',
+        navFaq: 'FAQ',
+        navCta: 'Video hochladen',
+        heroBadge: '🔬 KI-Forschung läuft — Trage zum Datensatz bei',
+        heroHeadline1: 'Restfilament schätzen aus einem',
+        heroHeadlineHighlight: 'einfachen Foto',
+        heroHeadline2: '.',
+        heroSubtitle1: "Ich entwickle ein revolutionäres KI-Modell für Maker. Ich brauche",
+        heroSubtitleHighlight: 'viele Videos',
+        heroSubtitle2: 'von Filamentspoolen, um mein Modell zu trainieren. Es dauert nur',
+        heroSubtitleBold: '60 Sekunden',
+        heroSubtitle3: 'zu helfen.',
+        heroCta: 'Wie du helfen kannst',
+        heroVisualLabel: 'SpoolID AI - Forschungsprojekt',
+        stat1Value: '100%',
+        stat1Label: 'Open Source Ansatz',
+        stat2Value: 'Jede',
+        stat2Label: 'Marke unterstützt',
+        problemTitle: 'Das Problem: Warum brauchen wir KI?',
+        card1Title: 'Schneller als eine Waage',
+        card1Body: "Das Ziel ist eine sofortige Kontrolle: Keine Küchenwaagen mehr. Nur ein Foto und du weißt, wie viel Material du noch hast.",
+        card2Title: 'Wiegen ist lästig',
+        card2Body: 'Das ständige Wiegen von Spulen und das Notieren der Gramm in einem Spreadsheet nimmt die Magie des 3D-Drucks.',
+        card3Title: 'Die KI-Lösung',
+        card3Body: 'Stelle dir vor, du machst ein einfaches Foto deiner Spule und die App sagt dir sofort: "Noch ca. 120 Gramm." Das baue ich gerade.',
+        helpTitle: 'Wie kannst du beim Aufbau des Datensatzes helfen?',
+        step1Title: 'Spule nehmen',
+        step1Body: 'Nimm eine Spule jeder Marke – am besten halb aufgebraucht.',
+        step2Title: 'Kurzes Video aufnehmen',
+        step2Body: 'Halte sie in der Hand und drehe sie 10–15 Sekunden lang langsam vor der Handykamera. Zeige deutlich die Seiten und die Mitte.',
+        step3Title: 'Datei hochladen',
+        step3Body: 'Wähle die Datei unten aus. Ich garantiere vollständige Anonymität.',
+        uploaderDropTitle: 'Video hierher ziehen oder klicken zum Durchsuchen',
+        uploaderDropSubtitle: 'MP4, MOV, WebM — Max 40MB',
+        uploaderPhase1: 'Schritt 1/2: Lokale Videodatei wird gelesen...',
+        uploaderPhase2: 'Schritt 2/2: Senden an Google Drive...',
+        uploaderWait: 'Bitte warten...',
+        uploaderSendBtn: 'Video zum Datensatz senden',
+        uploaderSuccessTitle: 'Upload abgeschlossen!',
+        uploaderSuccessBody: 'Vielen Dank für deinen Beitrag. Möchtest du eine E-Mail erhalten, wenn das KI-Modell fertig ist?',
+        uploaderEmailSubscribed: "Angemeldet! Ich halte dich über den Fortschritt auf dem Laufenden.",
+        uploaderEmailPlaceholder: 'Deine E-Mail',
+        uploaderEmailBtn: 'Auf dem Laufenden bleiben',
+        uploaderEmailBtnLoading: 'Sende...',
+        uploaderUploadAnother: 'Ein weiteres Video hochladen',
+        uploaderError: 'Upload-Fehler. Die Datei könnte zu groß sein oder die Verbindung instabil.',
+        uploaderErrorDevLabel: 'Technisches Detail für den Entwickler:',
+        uploaderPrivacy: 'Kein Konto erforderlich. Dein Video wird in vollständiger',
+        uploaderPrivacyBold: 'Anonymität und Sicherheit',
+        uploaderPrivacy2: 'auf meinem Forschungs-Google-Drive gespeichert.',
+        uploaderTooBig: (mb) => `Datei zu groß (${mb} MB). Google akzeptiert Dateien bis 40 MB. Versuche ein kürzeres Video oder verringere die Auflösung (z.B. 1080p statt 4K).`,
+        uploaderBadFormat: (name) => `Das Format der Datei (${name || 'unbekannt'}) scheint kein Standard-Videoformat zu sein. Bitte erneut versuchen.`,
+        newsletterError: "Anmeldefehler. Bitte erneut versuchen.",
+        faqTitle: 'Datensatz FAQ',
+        faqs: [
+            { q: 'Wozu dient das Video?', a: 'Ich nutze das Video, um verschiedene Winkel deiner Spule zu extrahieren. Diese Daten werden einem KI-Modell übergeben, um es zu trainieren, den verbleibenden Filamentanteil rein visuell abzuschätzen.' },
+            { q: 'Kann ich mit jeder Filamentmarke teilnehmen?', a: 'Absolut! Je mehr Marken, Farben und Größen wir sammeln, desto genauer und universeller wird das KI-Modell.' },
+            { q: 'Sind meine Daten und Videos sicher?', a: 'Ja. Videos gehen direkt auf meinen sicheren Google Drive und werden ausschließlich für die Forschung verwendet.' },
+            { q: 'Was passiert, nachdem ich meine E-Mail hinterlassen habe?', a: 'Ich nutze deine E-Mail ausschließlich für monatliche Updates (kein Spam!) zu meiner KI-Forschung.' }
+        ],
+        newsletterTitle: "Das KI-Training verfolgen",
+        newsletterSubtitle: "Noch nicht bereit zum Hochladen, aber neugierig? Hinterlasse deine E-Mail.",
+        newsletterSubtitle2: "Ich halte dich über die Forschungsergebnisse und den Modellstart auf dem Laufenden.",
+        newsletterSuccessTitle: 'Anmeldung bestätigt! 🎉',
+        newsletterSuccessBody: "Ich halte dich über SpoolID AIs Fortschritt informiert.",
+        newsletterEmailPlaceholder: 'Deine E-Mail',
+        newsletterBtn: 'Auf dem Laufenden bleiben',
+        newsletterBtnLoading: 'Anmelden...',
+        newsletterNoSpam: 'Kein Spam',
+        newsletterUseful: 'Nur nützliche Updates',
+        footerText: '© 2026 SpoolID AI Research. Projekt von Makern für Maker.',
+    },
+
+    fr: {
+        langCode: 'fr',
+        otherLangs: [
+            { path: '/', label: '🇬🇧 EN' },
+            { path: '/it', label: '🇮🇹 IT' },
+            { path: '/de', label: '🇩🇪 DE' },
+            { path: '/es', label: '🇪🇸 ES' },
+        ],
+        htmlLang: 'fr',
+        navProject: 'Le Projet',
+        navHelp: 'Comment aider',
+        navFaq: 'FAQ',
+        navCta: 'Télécharger votre vidéo',
+        heroBadge: '🔬 Recherche IA en cours — Contribuez au Dataset',
+        heroHeadline1: 'Estimer le filament restant depuis une',
+        heroHeadlineHighlight: 'simple photo',
+        heroHeadline2: '.',
+        heroSubtitle1: "Je développe un modèle IA révolutionnaire pour les makers. J'ai besoin de",
+        heroSubtitleHighlight: 'nombreuses vidéos',
+        heroSubtitle2: 'de bobines pour entraîner mon algorithme. Il suffit de',
+        heroSubtitleBold: '60 secondes',
+        heroSubtitle3: 'pour me aider.',
+        heroCta: 'Voir comment aider',
+        heroVisualLabel: 'SpoolID AI - Projet de recherche',
+        stat1Value: '100%',
+        stat1Label: 'Approche Open Source',
+        stat2Value: 'Toute',
+        stat2Label: 'Marque supportée',
+        problemTitle: "Le Problème : Pourquoi l'IA ?",
+        card1Title: 'Plus rapide que la balance',
+        card1Body: "L'objectif est un contrôle instantané : plus de balance de cuisine. Une seule photo et tu sais combien de matière il te reste.",
+        card2Title: "Peser, c'est fastidieux",
+        card2Body: "Peser constamment les bobines et noter les grammes sur un tableur enlève la magie de l'impression 3D.",
+        card3Title: "La Solution IA",
+        card3Body: "Imagine prendre une simple photo de ta bobine et que l'app te dise aussitôt : \"Il reste environ 120 grammes.\" C'est ce que je construis.",
+        helpTitle: 'Comment aider à construire le dataset ?',
+        step1Title: 'Prends une bobine',
+        step1Body: 'Prends une bobine de n\'importe quelle marque — de préférence à moitié utilisée.',
+        step2Title: 'Enregistre une courte vidéo',
+        step2Body: 'Tiens-la en main et fais-la tourner lentement devant la caméra de ton téléphone pendant 10–15 secondes. Montre bien les côtés et le centre.',
+        step3Title: 'Télécharge le fichier',
+        step3Body: 'Sélectionne le fichier ci-dessous. Je garantis un anonymat complet.',
+        uploaderDropTitle: 'Fais glisser ta vidéo ici ou clique pour parcourir',
+        uploaderDropSubtitle: 'MP4, MOV, WebM — Max 40 Mo',
+        uploaderPhase1: 'Étape 1/2 : Lecture du fichier vidéo local...',
+        uploaderPhase2: 'Étape 2/2 : Envoi vers Google Drive...',
+        uploaderWait: 'Patiente...',
+        uploaderSendBtn: 'Envoyer la vidéo au Dataset',
+        uploaderSuccessTitle: 'Téléchargement terminé !',
+        uploaderSuccessBody: 'Merci beaucoup pour ta contribution. Voudrais-tu recevoir un e-mail quand le modèle IA est prêt?',
+        uploaderEmailSubscribed: "Inscription confirmée ! Je te tiendrai informé(e) des progrès.",
+        uploaderEmailPlaceholder: 'Ton e-mail',
+        uploaderEmailBtn: 'Rester informé(e)',
+        uploaderEmailBtnLoading: 'Envoi...',
+        uploaderUploadAnother: 'Télécharger une autre vidéo',
+        uploaderError: 'Erreur de téléchargement. Le fichier est peut-être trop volumineux ou la connexion instable.',
+        uploaderErrorDevLabel: 'Détail technique pour le développeur :',
+        uploaderPrivacy: 'Aucun compte requis. Ta vidéo est sauvegardée en',
+        uploaderPrivacyBold: 'anonymat et sécurité complets',
+        uploaderPrivacy2: 'sur mon Google Drive de recherche.',
+        uploaderTooBig: (mb) => `Fichier trop grand (${mb} Mo). Google accepte des fichiers allant jusqu'à 40 Mo. Enregistre une vidéo plus courte ou réduis la résolution (ex. 1080p instead de 4K).`,
+        uploaderBadFormat: (name) => `Le format du fichier (${name || 'inconnu'}) ne semble pas être une vidéo standard. Veuillez réessayer.`,
+        newsletterError: "Erreur d'inscription. Veuillez réessayer.",
+        faqTitle: 'FAQ Dataset',
+        faqs: [
+            { q: 'À quoi sert la vidéo ?', a: "J'utilise la vidéo pour extraire différents angles de ta bobine. Ces données seront transmises à un modèle IA pour lui apprendre à estimer le filament restant par analyse visuelle." },
+            { q: 'Puis-je participer avec n\'importe quelle marque ?', a: "Absolument ! Plus nous collectons de marques, couleurs et tailles, plus le modèle IA sera précis." },
+            { q: 'Mes données et vidéos sont-elles sécurisées ?', a: "Oui. Les vidéos vont directement sur mon Google Drive sécurisé et ne seront jamais partagées ni vendues." },
+            { q: "Que se passe-t-il après avoir laissé mon e-mail ?", a: "J'utiliserai ton e-mail uniquement pour des mises à jour mensuelles (sans spam !) sur mes recherches IA." }
+        ],
+        newsletterTitle: "Suis l'entraînement de l'IA",
+        newsletterSubtitle: "Pas prêt(e) à télécharger une vidéo mais curieux/se ? Laisse ton e-mail.",
+        newsletterSubtitle2: "Je te tiendrai informé(e) des résultats et du lancement du modèle.",
+        newsletterSuccessTitle: 'Inscription confirmée ! 🎉',
+        newsletterSuccessBody: "Je te tiendrai informé(e) des progrès de SpoolID AI.",
+        newsletterEmailPlaceholder: 'Ton e-mail',
+        newsletterBtn: 'Rester informé(e)',
+        newsletterBtnLoading: "Inscription...",
+        newsletterNoSpam: 'Pas de spam',
+        newsletterUseful: 'Uniquement des mises à jour utiles',
+        footerText: '© 2026 SpoolID AI Research. Projet par des Makers pour des Makers.',
+    },
+
+    es: {
+        langCode: 'es',
+        otherLangs: [
+            { path: '/', label: '🇬🇧 EN' },
+            { path: '/it', label: '🇮🇹 IT' },
+            { path: '/de', label: '🇩🇪 DE' },
+            { path: '/fr', label: '🇫🇷 FR' },
+        ],
+        htmlLang: 'es',
+        navProject: 'El Proyecto',
+        navHelp: 'Cómo ayudar',
+        navFaq: 'FAQ',
+        navCta: 'Sube tu vídeo',
+        heroBadge: '🔬 Investigación IA en curso — Contribuye al Dataset',
+        heroHeadline1: 'Estimar el filamento restante desde una',
+        heroHeadlineHighlight: 'simple foto',
+        heroHeadline2: '.',
+        heroSubtitle1: "Estoy desarrollando un modelo de IA revolucionario para makers. Necesito",
+        heroSubtitleHighlight: 'muchos vídeos',
+        heroSubtitle2: 'de bobinas para entrenar mi algoritmo. Solo toma',
+        heroSubtitleBold: '60 segundos',
+        heroSubtitle3: 'ayudarme.',
+        heroCta: 'Ver cómo ayudar',
+        heroVisualLabel: 'SpoolID AI - Proyecto de Investigación',
+        stat1Value: '100%',
+        stat1Label: 'Enfoque Open Source',
+        stat2Value: 'Cualquier',
+        stat2Label: 'Marca Soportada',
+        problemTitle: '¿Por qué necesitamos IA?',
+        card1Title: 'Más rápido que una báscula',
+        card1Body: "El objetivo es darte un control instantáneo: sin más básculas de cocina. Solo una foto y sabrás cuánto material te queda.",
+        card2Title: 'Pesar es un fastidio',
+        card2Body: 'Estar pesando bobinas continuamente y anotando los gramos en una hoja de cálculo le quita la magia a la impresión 3D.',
+        card3Title: 'La Solución IA',
+        card3Body: 'Imagina sacar una simple foto a tu bobina y que la app te diga al instante: "Quedan unos 120 gramos." Eso es lo que estoy construyendo.',
+        helpTitle: '¿Cómo puedes ayudarme a construir el dataset?',
+        step1Title: 'Coge una bobina',
+        step1Body: 'Coge una bobina de cualquier marca, preferiblemente a medio usar.',
+        step2Title: 'Graba un vídeo corto',
+        step2Body: 'Sostenla en la mano y gírala lentamente frente a la cámara del móvil durante 10–15 segundos. Muestra bien los lados y el centro.',
+        step3Title: 'Sube el archivo',
+        step3Body: 'Selecciona el archivo abajo. Te garantizo total anonimato.',
+        uploaderDropTitle: 'Arrastra tu vídeo aquí o haz clic para buscar',
+        uploaderDropSubtitle: 'MP4, MOV, WebM — Máx 40MB',
+        uploaderPhase1: 'Paso 1/2: Leyendo archivo de vídeo local...',
+        uploaderPhase2: 'Paso 2/2: Enviando a Google Drive...',
+        uploaderWait: 'Espera...',
+        uploaderSendBtn: 'Enviar vídeo al Dataset',
+        uploaderSuccessTitle: '¡Subida completada!',
+        uploaderSuccessBody: 'Muchas gracias por tu contribución. ¿Te gustaría recibir un correo cuando el modelo IA esté listo?',
+        uploaderEmailSubscribed: "¡Suscripción confirmada! Te mantendré informado/a sobre el progreso.",
+        uploaderEmailPlaceholder: 'Tu correo',
+        uploaderEmailBtn: 'Mantenerme informado/a',
+        uploaderEmailBtnLoading: 'Enviando...',
+        uploaderUploadAnother: 'Subir otro vídeo',
+        uploaderError: 'Error de subida. El archivo puede ser demasiado grande o la conexión inestable.',
+        uploaderErrorDevLabel: 'Detalle técnico para el desarrollador:',
+        uploaderPrivacy: 'No se requiere cuenta. Tu vídeo se guarda con total',
+        uploaderPrivacyBold: 'anonimato y seguridad',
+        uploaderPrivacy2: 'en mi Google Drive de investigación.',
+        uploaderTooBig: (mb) => `Archivo demasiado grande (${mb} MB). Google acepta archivos de hasta 40MB. Graba un vídeo más corto o reduce la resolución (p.ej. 1080p en vez de 4K).`,
+        uploaderBadFormat: (name) => `El formato del archivo (${name || 'desconocido'}) no parece ser un vídeo estándar. Por favor, inténtalo de nuevo.`,
+        newsletterError: "Error de suscripción. Por favor, inténtalo de nuevo.",
+        faqTitle: 'Preguntas frecuentes del Dataset',
+        faqs: [
+            { q: '¿Para qué sirve el vídeo?', a: "Utilizo el vídeo para extraer distintos ángulos de tu bobina. Estos datos se usarán para entrenar un modelo IA que aprenda a estimar el filamento restante solo con análisis visual." },
+            { q: '¿Puedo participar con cualquier marca de filamento?', a: "¡Por supuesto! Cuantas más marcas, colores y tamaños recojamos, más preciso y universal será el modelo IA." },
+            { q: '¿Están seguros mis datos y vídeos?', a: "Sí. Los vídeos van directamente a mi Google Drive seguro y se usan exclusivamente para investigación." },
+            { q: '¿Qué pasa después de dejar mi correo?', a: "Usaré tu correo únicamente para enviarte actualizaciones mensuales (¡sin spam!) sobre el progreso de mi investigación IA." }
+        ],
+        newsletterTitle: "Sigue el entrenamiento de la IA",
+        newsletterSubtitle: "¿No estás listo/a para subir un vídeo pero tienes curiosidad? Deja tu correo.",
+        newsletterSubtitle2: "Te mantendré informado/a sobre los resultados de la investigación y el lanzamiento del modelo.",
+        newsletterSuccessTitle: '¡Suscripción confirmada! 🎉',
+        newsletterSuccessBody: "Te mantendré informado/a sobre el progreso de SpoolID AI.",
+        newsletterEmailPlaceholder: 'Tu correo',
+        newsletterBtn: 'Mantenerse informado/a',
+        newsletterBtnLoading: 'Suscribiendo...',
+        newsletterNoSpam: 'Sin spam',
+        newsletterUseful: 'Solo actualizaciones útiles',
+        footerText: '© 2026 SpoolID AI Research. Proyecto de Makers para Makers.',
     }
 }
 
