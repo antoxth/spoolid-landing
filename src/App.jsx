@@ -232,7 +232,7 @@ function App() {
               </div>
               <h3 className="text-2xl font-bold mb-3">Più veloce della Pesa</h3>
               <p className="text-gray-400">
-                L'obiettivo è offrirti un controllo immediato: niente più bilance da cucina o taring delle bobine vuote. Solo uno scatto e sai quanto materiale hai.
+                L'obiettivo è offrirti un controllo immediato: niente più bilance da cucina. Solo uno scatto e sai quanto materiale hai.
               </p>
             </div>
 
