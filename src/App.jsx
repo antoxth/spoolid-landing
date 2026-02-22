@@ -14,7 +14,8 @@ import {
   Lock,
   Zap,
   Play,
-  Database
+  Database,
+  CheckCircle
 } from 'lucide-react'
 
 function App() {
@@ -24,33 +25,114 @@ function App() {
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const [openFaq, setOpenFaq] = useState(null)
 
+  const [videoFile, setVideoFile] = useState(null)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadStatus, setUploadStatus] = useState(null)
+
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxQTNVG1aJi3nJijdzhljl504_WaJrwpaWgb9tO3PUhhhlqySPbQt6cHzZ-16VZFBX7/exec"
+
   const handleNewsletterSubmit = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
 
-    // Using Web3Forms
-    const formData = new FormData()
-    formData.append('access_key', '786fd9cc-5360-4f0d-8a42-2be634c76c06') // Web3Forms key
-    formData.append('email', email)
-    formData.append('subject', 'Nuova iscrizione Newsletter SpoolID AI Project')
-    formData.append('from_name', 'SpoolID AI Research')
-
     try {
-      const response = await fetch('https://api.web3forms.com/submit', {
+      const response = await fetch(APPS_SCRIPT_URL, {
         method: 'POST',
-        body: formData
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8',
+        },
+        body: JSON.stringify({
+          action: 'newsletter',
+          email: email
+        })
       })
 
-      if (response.ok) {
+      const data = await response.json()
+
+      if (data.status === 'success') {
         setSubmitSuccess(true)
         setEmail('')
         setTimeout(() => setSubmitSuccess(false), 5000)
+      } else {
+        throw new Error(data.message)
       }
     } catch (error) {
       console.error('Error submitting form:', error)
-      alert('Errore durante l\'invio. Riprova.')
+      alert("Errore durante l'iscrizione. Riprova.")
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0]
+    if (file && file.type.startsWith('video/')) {
+      setVideoFile(file)
+      setUploadStatus(null)
+    } else if (file) {
+      alert("Per favore, seleziona un file video valido.")
+    }
+  }
+
+  const handleVideoUpload = async () => {
+    if (!videoFile) return
+    setIsUploading(true)
+    setUploadStatus(null)
+    setUploadProgress(10)
+
+    try {
+      const reader = new FileReader()
+      reader.readAsDataURL(videoFile)
+
+      reader.onload = async () => {
+        setUploadProgress(40)
+        const base64Data = reader.result
+
+        try {
+          const response = await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'text/plain;charset=utf-8',
+            },
+            body: JSON.stringify({
+              action: 'upload_video',
+              fileName: videoFile.name,
+              mimeType: videoFile.type,
+              fileData: base64Data
+            })
+          })
+
+          setUploadProgress(80)
+          const data = await response.json()
+
+          if (data.status === 'success') {
+            setUploadStatus('success')
+            setVideoFile(null)
+            setTimeout(() => setUploadStatus(null), 8000)
+          } else {
+            throw new Error(data.message || 'Upload failed')
+          }
+        } catch (err) {
+          console.error('Upload API Error:', err)
+          setUploadStatus('error')
+        } finally {
+          setIsUploading(false)
+          setUploadProgress(0)
+        }
+      }
+
+      reader.onerror = (error) => {
+        console.error('File reading error:', error)
+        setUploadStatus('error')
+        setIsUploading(false)
+        setUploadProgress(0)
+      }
+    } catch (error) {
+      console.error('General Upload Error:', error)
+      setUploadStatus('error')
+      setIsUploading(false)
+      setUploadProgress(0)
     }
   }
 
@@ -104,7 +186,7 @@ function App() {
 
             {/* CTA Button */}
             <div className="hidden md:block">
-              <a href={GOOGLE_FORM_UPLOAD_URL} target="_blank" rel="noreferrer" className="btn-secondary">
+              <a href="#upload" className="btn-secondary">
                 Carica il tuo Video
               </a>
             </div>
@@ -147,8 +229,7 @@ function App() {
                 FAQ
               </a>
               <a
-                href={GOOGLE_FORM_UPLOAD_URL}
-                target="_blank" rel="noreferrer"
+                href="#upload"
                 className="block px-3 py-2 text-brand-orange hover:text-white transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
@@ -304,17 +385,80 @@ function App() {
               </div>
               <h3 className="text-2xl font-bold mb-3">Carica il File</h3>
               <p className="text-gray-400">
-                Clicca sul pulsante qui sotto per inviarmi il video tramite il mio modulo sicuro di Google Drive.
+                Seleziona il file qui sotto. Ti garantisco il pieno anonimato.
               </p>
             </div>
           </div>
 
-          <div className="mt-16 text-center">
-            <a href={GOOGLE_FORM_UPLOAD_URL} target="_blank" rel="noreferrer" className="btn-primary inline-flex items-center gap-2 text-lg px-8 py-4">
-              <Upload size={24} />
-              Vai al Form per caricare il tuo Video
-            </a>
-            <p className="text-sm text-gray-500 mt-4">Richiede accesso rapido a Google per l'invio su Drive.</p>
+          <div className="mt-16 max-w-2xl mx-auto bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl">
+            <div className="text-center">
+              {!videoFile ? (
+                <div className="border-2 border-dashed border-gray-700 rounded-xl p-12 hover:border-brand-orange hover:bg-gray-800/50 transition-all relative group">
+                  <input
+                    type="file"
+                    accept="video/*"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                    onChange={handleFileChange}
+                    disabled={isUploading}
+                  />
+                  <Upload size={48} className="mx-auto text-gray-500 group-hover:text-brand-orange mb-4 transition-colors" />
+                  <h4 className="text-xl font-medium text-white mb-2">Trascina qui il tuo video o clicca per sfogliare</h4>
+                  <p className="text-gray-400 text-sm">MP4, MOV, WebM - Massimo 50MB</p>
+                </div>
+              ) : (
+                <div className="p-8 border border-gray-800 rounded-xl bg-gray-800/50">
+                  <div className="flex items-center justify-center gap-4 mb-6">
+                    <div className="p-3 bg-brand-blue/20 rounded-lg text-brand-blue">
+                      <Camera size={32} />
+                    </div>
+                    <div className="text-left flex-1 min-w-0">
+                      <p className="text-white font-medium truncate max-w-xs">{videoFile.name}</p>
+                      <p className="text-sm text-gray-400">{(videoFile.size / (1024 * 1024)).toFixed(2)} MB</p>
+                    </div>
+                    {!isUploading && (
+                      <button onClick={() => setVideoFile(null)} className="text-gray-500 hover:text-red-500 p-2 transition-colors z-20 relative">
+                        <X size={20} />
+                      </button>
+                    )}
+                  </div>
+
+                  {isUploading ? (
+                    <div className="w-full">
+                      <div className="flex justify-between text-sm mb-2 text-gray-400">
+                        <span>Caricamento magico in corso...</span>
+                        <span>{uploadProgress}%</span>
+                      </div>
+                      <div className="w-full bg-gray-700 rounded-full h-2">
+                        <div className="bg-brand-orange h-2 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
+                      </div>
+                    </div>
+                  ) : (
+                    <button onClick={handleVideoUpload} className="btn-primary w-full flex items-center justify-center gap-2 relative z-20">
+                      <Upload size={20} />
+                      Invia Video al Dataset
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {uploadStatus === 'success' && (
+                <div className="mt-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg text-green-400 flex items-center justify-center gap-2">
+                  <CheckCircle size={20} />
+                  <span>Upload completato! Grazie mille per il tuo contributo.</span>
+                </div>
+              )}
+
+              {uploadStatus === 'error' && (
+                <div className="mt-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 flex items-center justify-center gap-2 text-left">
+                  <AlertTriangle size={24} className="flex-shrink-0" />
+                  <span className="text-sm">Errore durante l'upload. Il file potrebbe essere troppo grande o internet instabile.</span>
+                </div>
+              )}
+
+              <p className="text-sm text-gray-500 mt-6">
+                Nessun account richiesto. Il tuo video viene salvato in totale <strong className="text-gray-400">anonimato e sicurezza</strong> sul mio Google Drive di ricerca.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -374,9 +518,6 @@ function App() {
           ) : (
             <>
               <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto mb-6">
-                {/* Web3Forms Auto-Reply Configuration */}
-                <input type="hidden" name="subject" value="Iscrizione Notizie SpoolID AI" />
-                <input type="hidden" name="from_name" value="SpoolID AI" />
 
                 <input
                   type="email"
