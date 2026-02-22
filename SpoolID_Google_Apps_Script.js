@@ -21,6 +21,9 @@ const FOLDER_ID = "INSERISCI_QUI_L_ID_DELLA_CARTELLA_DRIVE";
 // L'ID è: 1XyZ_aBcDeFgHiJkLmNoPqrStUvWxYz_12345
 const SPREADSHEET_ID = "INSERISCI_QUI_L_ID_DEL_FOGLIO_GOOGLE";
 
+// 3. Email a cui inviare le notifiche di sistema
+const NOTIFICATION_EMAIL = "antoniocolucciph@gmail.com";
+
 // ==========================================
 // ⚙️ CODICE DI SISTEMA (Non Modificare) ⚙️
 // ==========================================
@@ -60,6 +63,17 @@ function doPost(e) {
             // Aggiunge una riga con la data corrente e l'email
             sheet.appendRow([new Date(), email]);
 
+            // Invia notifica email al creatore
+            try {
+                MailApp.sendEmail({
+                    to: NOTIFICATION_EMAIL,
+                    subject: "🎉 SpoolID AI: Nuova Iscrizione Newsletter!",
+                    body: "Ottime notizie!\n\nUn nuovo utente vuole restare aggiornato sulla tua ricerca:\nEmail: " + email + "\n\nData: " + new Date().toLocaleString()
+                });
+            } catch (mailError) {
+                console.error("Errore invio notifica email newsletter: " + mailError);
+            }
+
             return respondSuccess("Email salvata con successo.");
         }
 
@@ -80,6 +94,17 @@ function doPost(e) {
             var decodedFile = Utilities.base64Decode(fileData.split(',')[1] || fileData);
             var blob = Utilities.newBlob(decodedFile, mimeType, fileName);
             var file = folder.createFile(blob);
+
+            // Invia notifica email al creatore
+            try {
+                MailApp.sendEmail({
+                    to: NOTIFICATION_EMAIL,
+                    subject: "📼 SpoolID AI: Nuovo Video Ricevuto per il Dataset!",
+                    body: "Ottimo lavoro!\n\nQualcuno ha appena caricato un nuovo video per il tuo dataset.\n\nNome file: " + fileName + "\nGuarda il video (o scaricalo) qui: " + file.getUrl() + "\n\nData: " + new Date().toLocaleString()
+                });
+            } catch (mailError) {
+                console.error("Errore invio notifica email video: " + mailError);
+            }
 
             return respondSuccess({
                 message: "Video caricato con successo sul Drive",
