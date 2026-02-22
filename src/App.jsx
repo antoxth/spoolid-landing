@@ -116,47 +116,64 @@ function App() {
     if (!videoFile) return
     setIsUploading(true)
     setUploadStatus(null)
-    setUploadProgress(10)
+    setUploadProgress(0)
 
     try {
       const reader = new FileReader()
       reader.readAsDataURL(videoFile)
 
-      reader.onload = async () => {
-        setUploadProgress(40)
+      reader.onload = () => {
         const base64Data = reader.result
+        const payload = JSON.stringify({
+          action: 'upload_video',
+          fileName: videoFile.name,
+          mimeType: videoFile.type,
+          fileData: base64Data
+        })
 
-        try {
-          const response = await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'text/plain;charset=utf-8',
-            },
-            body: JSON.stringify({
-              action: 'upload_video',
-              fileName: videoFile.name,
-              mimeType: videoFile.type,
-              fileData: base64Data
-            })
-          })
+        const xhr = new XMLHttpRequest()
+        xhr.open('POST', APPS_SCRIPT_URL, true)
+        xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8')
 
-          setUploadProgress(80)
-          const data = await response.json()
-
-          if (data.status === 'success') {
-            setUploadStatus('success')
-            setVideoFile(null)
-            // Timeout rimosso per permettere all'utente di inserire l'email
-          } else {
-            throw new Error(data.message || 'Upload failed')
+        // Track real upload progress
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const percentComplete = Math.round((event.loaded / event.total) * 100)
+            // Limit to 99% because Google's backend still takes a few seconds to save the file
+            setUploadProgress(Math.min(percentComplete, 99))
           }
-        } catch (err) {
-          console.error('Upload API Error:', err)
+        }
+
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 400) {
+            try {
+              const data = JSON.parse(xhr.responseText)
+              if (data.status === 'success') {
+                setUploadProgress(100)
+                setUploadStatus('success')
+                setVideoFile(null)
+              } else {
+                throw new Error(data.message || 'Upload failed')
+              }
+            } catch (err) {
+              console.error('Upload API Data Error:', err)
+              setUploadStatus('error')
+            }
+          } else {
+            console.error('Upload Request Error:', xhr.statusText)
+            setUploadStatus('error')
+          }
+          setIsUploading(false)
+        }
+
+        xhr.onerror = () => {
+          console.error('Upload Network Error')
           setUploadStatus('error')
-        } finally {
           setIsUploading(false)
           setUploadProgress(0)
         }
+
+        xhr.send(payload)
       }
 
       reader.onerror = (error) => {
@@ -462,11 +479,11 @@ function App() {
                   {isUploading ? (
                     <div className="w-full">
                       <div className="flex justify-between text-sm mb-2 text-gray-400">
-                        <span>Caricamento magico in corso...</span>
+                        <span>Caricamento in corso...</span>
                         <span>{uploadProgress}%</span>
                       </div>
-                      <div className="w-full bg-gray-700 rounded-full h-2">
-                        <div className="bg-brand-orange h-2 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
+                      <div className="w-full bg-gray-700 rounded-full h-2 shadow-inner overflow-hidden">
+                        <div className="bg-brand-orange h-2 rounded-full transition-all duration-150 ease-out" style={{ width: `${uploadProgress}%` }}></div>
                       </div>
                     </div>
                   ) : (
