@@ -116,47 +116,81 @@ function App() {
     if (!videoFile) return
     setIsUploading(true)
     setUploadStatus(null)
-    setUploadProgress(10)
+    setUploadProgress(0)
 
     try {
       const reader = new FileReader()
-      reader.readAsDataURL(videoFile)
 
-      reader.onload = async () => {
-        setUploadProgress(40)
+      // 1. Traccia la conversione in Base64 (può servire qualche secondo per video grandi)
+      reader.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percentLoaded = Math.round((event.loaded / event.total) * 10)
+          setUploadProgress(percentLoaded)
+        }
+      }
+
+      reader.onload = () => {
+        setUploadProgress(10)
         const base64Data = reader.result
 
-        try {
-          const response = await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'text/plain;charset=utf-8',
-            },
-            body: JSON.stringify({
-              action: 'upload_video',
-              fileName: videoFile.name,
-              mimeType: videoFile.type,
-              fileData: base64Data
-            })
-          })
+        const payload = JSON.stringify({
+          action: 'upload_video',
+          fileName: videoFile.name,
+          mimeType: videoFile.type,
+          fileData: base64Data
+        })
 
-          setUploadProgress(80)
-          const data = await response.json()
+        // 2. Traccia il reale upload di rete tramite XHR (senza preflight CORS errati)
+        const xhr = new XMLHttpRequest()
+        xhr.open('POST', APPS_SCRIPT_URL, true)
+        xhr.setRequestHeader('Content-Type', 'text/plain')
 
-          if (data.status === 'success') {
-            setUploadProgress(100)
-            setUploadStatus('success')
-            setVideoFile(null)
-          } else {
-            throw new Error(data.message || 'Upload failed')
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const percentComplete = Math.round((event.loaded / event.total) * 89)
+            setUploadProgress(10 + percentComplete)
           }
-        } catch (err) {
-          console.error('Upload API Error:', err)
+        }
+
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 400) {
+            try {
+              const data = JSON.parse(xhr.responseText)
+              if (data.status === 'success') {
+                setUploadProgress(100)
+                setUploadStatus('success')
+                setVideoFile(null)
+              } else {
+                throw new Error(data.message || 'Upload failed')
+              }
+            } catch (err) {
+              console.error('Upload API Parse Error:', err)
+              setUploadStatus('error')
+            }
+          } else {
+            console.error('Upload Server Error:', xhr.status, xhr.statusText)
+            setUploadStatus('error')
+          }
+          setIsUploading(false)
+        }
+
+        xhr.onerror = () => {
+          console.error('Upload Network/CORS Error')
           setUploadStatus('error')
-        } finally {
           setIsUploading(false)
           setUploadProgress(0)
         }
+
+        // Prevents getting stuck indefinitely
+        xhr.timeout = 300000; // 5 minutes max
+        xhr.ontimeout = () => {
+          console.error('Upload Timeout Error')
+          setUploadStatus('error')
+          setIsUploading(false)
+          setUploadProgress(0)
+        }
+
+        xhr.send(payload)
       }
 
       reader.onerror = (error) => {
@@ -165,6 +199,10 @@ function App() {
         setIsUploading(false)
         setUploadProgress(0)
       }
+
+      // Avvia la lettura
+      reader.readAsDataURL(videoFile)
+
     } catch (error) {
       console.error('General Upload Error:', error)
       setUploadStatus('error')
