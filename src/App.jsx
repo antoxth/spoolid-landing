@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Camera,
   Upload,
@@ -17,8 +18,12 @@ import {
   Database,
   CheckCircle
 } from 'lucide-react'
+import translations from './translations'
 
-function App() {
+function App({ lang = 'en' }) {
+  const t = translations[lang] || translations['en']
+  const navigate = useNavigate()
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [email, setEmail] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -38,6 +43,11 @@ function App() {
   const [postEmailSuccess, setPostEmailSuccess] = useState(false)
 
   const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxQTNVG1aJi3nJijdzhljl504_WaJrwpaWgb9tO3PUhhhlqySPbQt6cHzZ-16VZFBX7/exec"
+
+  // Update html lang attribute for SEO
+  useEffect(() => {
+    document.documentElement.lang = t.htmlLang
+  }, [t.htmlLang])
 
   const handleNewsletterSubmit = async (e) => {
     e.preventDefault()
@@ -66,7 +76,7 @@ function App() {
       }
     } catch (error) {
       console.error('Error submitting form:', error)
-      alert("Errore durante l'iscrizione. Riprova.")
+      alert(t.newsletterError)
     } finally {
       setIsSubmitting(false)
     }
@@ -98,7 +108,7 @@ function App() {
       }
     } catch (error) {
       console.error('Error submitting post-upload email:', error)
-      alert("Errore durante l'iscrizione. Riprova.")
+      alert(t.newsletterError)
     } finally {
       setIsSubmittingPostEmail(false)
     }
@@ -114,12 +124,9 @@ function App() {
     const isUnidentifiedButLikelyValid = file && file.type === ''
 
     if (file && (isVideoType || hasVideoExt || isUnidentifiedButLikelyValid)) {
-      // Base64 encoding adds ~33% overhead. Apps Script has a hard 50MB POST limit.
-      // So max raw file size should be strictly under 40MB (ideally ~35MB) to be safe.
       const maxSizeInBytes = 40 * 1024 * 1024 // 40 MB
       if (file.size > maxSizeInBytes) {
-        alert(`Il file è troppo grande (${(file.size / 1024 / 1024).toFixed(1)} MB). Google accetta file fino a 40MB via form. Prova a girare un video più breve o abbassare la risoluzione della fotocamera (es. 1080p invece di 4K).`)
-        // Clear the input so they can select again
+        alert(t.uploaderTooBig((file.size / 1024 / 1024).toFixed(1)))
         e.target.value = null
         return
       }
@@ -127,7 +134,7 @@ function App() {
       setVideoFile(file)
       setUploadStatus(null)
     } else if (file) {
-      alert(`Il formato del file (${file?.name || 'sconosciuto'}) non sembra un video standard. Riprova.`)
+      alert(t.uploaderBadFormat(file?.name))
       e.target.value = null
     }
   }
@@ -174,7 +181,7 @@ function App() {
           try {
             data = JSON.parse(rawText)
           } catch (parseErr) {
-            throw new Error(`Google Server Error (HTTP ${response.status}): Il server ha rifiutato il file o è andato in timeout. Risposta di sistema: ${rawText.substring(0, 150)}...`)
+            throw new Error(`Google Server Error (HTTP ${response.status}): ${rawText.substring(0, 150)}...`)
           }
 
           if (data.status === 'success') {
@@ -216,27 +223,7 @@ function App() {
     }
   }
 
-  const faqs = [
-    {
-      q: "A cosa serve il video che devo caricare?",
-      a: "Il video mi serve per estrarre diverse angolazioni della tua bobina. Questi dati (dataset) verranno 'dati in pasto' a un modello di Intelligenza Artificiale per insegnargli a stimare quanto filamento è rimasto basandosi puramente sull'analisi visiva."
-    },
-    {
-      q: "Posso partecipare con qualsiasi marca di filamento?",
-      a: "Assolutamente sì! Più marche, colori e dimensioni diverse raccogliamo, più il modello AI diventerà preciso e universale."
-    },
-    {
-      q: "I miei dati personali e video sono al sicuro?",
-      a: "Sì, i video caricati tramite il form finiranno direttamente nel mio spazio di archiviazione protetto (Google Drive). Verranno utilizzati esclusivamente a scopo di ricerca e non verranno condivisi o venduti."
-    },
-    {
-      q: "Cosa succede dopo aver lasciato la mail?",
-      a: "Utilizzerò la tua email esclusivamente per tenerti aggiornato mensilmente (nessun blocco di spam!) sui progressi della mia ricerca AI e sull'eventuale rilascio dell'applicazione finale."
-    }
-  ]
-
-  // IMPORTANT: Metti qui l'URL del tuo Google Form per l'upload
-  const GOOGLE_FORM_UPLOAD_URL = "https://forms.gle/INSERISCI_QUI_IL_TUO_LINK_AL_FORM"
+  const faqs = t.faqs
 
   return (
     <div className="min-h-screen bg-[#121212] text-white">
@@ -254,20 +241,27 @@ function App() {
             {/* Desktop Nav Links */}
             <div className="hidden md:flex space-x-8">
               <a href="#progetto" className="text-gray-300 hover:text-white transition-colors">
-                Il Progetto
+                {t.navProject}
               </a>
               <a href="#upload" className="text-gray-300 hover:text-white transition-colors">
-                Come Aiutarmi
+                {t.navHelp}
               </a>
               <a href="#faq" className="text-gray-300 hover:text-white transition-colors">
-                FAQ
+                {t.navFaq}
               </a>
             </div>
 
-            {/* CTA Button */}
-            <div className="hidden md:block">
+            {/* Right side: CTA + Language switcher */}
+            <div className="hidden md:flex items-center gap-4">
+              <button
+                onClick={() => navigate(t.otherLangPath)}
+                className="text-sm text-gray-400 hover:text-white transition-colors"
+                title="Switch language"
+              >
+                {t.otherLangLabel}
+              </button>
               <a href="#upload" className="btn-secondary">
-                Carica il tuo Video
+                {t.navCta}
               </a>
             </div>
 
@@ -292,29 +286,35 @@ function App() {
                 className="block px-3 py-2 text-gray-300 hover:text-white transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Il Progetto
+                {t.navProject}
               </a>
               <a
                 href="#upload"
                 className="block px-3 py-2 text-gray-300 hover:text-white transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Come Aiutarmi
+                {t.navHelp}
               </a>
               <a
                 href="#faq"
                 className="block px-3 py-2 text-gray-300 hover:text-white transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                FAQ
+                {t.navFaq}
               </a>
               <a
                 href="#upload"
                 className="block px-3 py-2 text-brand-orange hover:text-white transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Carica il tuo Video
+                {t.navCta}
               </a>
+              <button
+                onClick={() => { navigate(t.otherLangPath); setMobileMenuOpen(false) }}
+                className="block px-3 py-2 text-gray-400 hover:text-white transition-colors text-sm"
+              >
+                {t.otherLangLabel}
+              </button>
             </div>
           </div>
         )}
@@ -326,19 +326,22 @@ function App() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <div className="inline-block px-3 py-1 bg-brand-blue/10 border border-brand-blue/30 rounded-full mb-4">
-                <p className="text-brand-blue font-semibold text-sm">🔬 Ricerca AI in Corso - Contribuisci al Dataset</p>
+                <p className="text-brand-blue font-semibold text-sm">{t.heroBadge}</p>
               </div>
 
               <h2 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-                Stimare il filamento residuo da una <span className="text-brand-orange">semplice foto</span>.
+                {t.heroHeadline1} <span className="text-brand-orange">{t.heroHeadlineHighlight}</span>{t.heroHeadline2}
               </h2>
               <p className="text-xl text-gray-400 mb-8 leading-relaxed">
-                Sto sviluppando un modello di Intelligenza Artificiale rivoluzionario per i maker.
-                Ho bisogno di <span className="text-brand-orange font-semibold">tanti video</span> di bobine per addestrare il mio algoritmo. Ti bastano <strong className="text-white">60 secondi</strong> per aiutarmi.
+                {t.heroSubtitle1}{' '}
+                <span className="text-brand-orange font-semibold">{t.heroSubtitleHighlight}</span>{' '}
+                {t.heroSubtitle2}{' '}
+                <strong className="text-white">{t.heroSubtitleBold}</strong>{' '}
+                {t.heroSubtitle3}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center mb-6">
                 <a href="#upload" className="btn-primary inline-block">
-                  Scopri come aiutare
+                  {t.heroCta}
                 </a>
               </div>
             </div>
@@ -348,7 +351,7 @@ function App() {
               <div className="w-full aspect-[4/3] bg-gray-800 rounded-2xl shadow-2xl relative overflow-hidden border border-gray-700 flex items-center justify-center group flex-col">
                 <div className="absolute inset-0 bg-gradient-to-tr from-brand-orange/20 to-brand-blue/20 opacity-30"></div>
                 <BrainCircuit size={80} className="text-brand-blue mb-4 opacity-80" />
-                <p className="text-gray-400 font-medium">SpoolID AI - Progetto di Ricerca</p>
+                <p className="text-gray-400 font-medium">{t.heroVisualLabel}</p>
               </div>
             </div>
           </div>
@@ -361,12 +364,12 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-gray-800">
             <div className="py-4">
-              <div className="text-4xl font-bold text-brand-blue mb-2">100%</div>
-              <div className="text-sm tracking-wider uppercase text-gray-500">Open Source Approach</div>
+              <div className="text-4xl font-bold text-brand-blue mb-2">{t.stat1Value}</div>
+              <div className="text-sm tracking-wider uppercase text-gray-500">{t.stat1Label}</div>
             </div>
             <div className="py-4">
-              <div className="text-4xl font-bold text-brand-orange mb-2">Qualsiasi</div>
-              <div className="text-sm tracking-wider uppercase text-gray-500">Marca Supportata</div>
+              <div className="text-4xl font-bold text-brand-orange mb-2">{t.stat2Value}</div>
+              <div className="text-sm tracking-wider uppercase text-gray-500">{t.stat2Label}</div>
             </div>
           </div>
         </div>
@@ -376,7 +379,7 @@ function App() {
       <section id="progetto" className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-900/30">
         <div className="max-w-7xl mx-auto">
           <h2 className="section-title text-center mb-16">
-            Il Problema: Perché serve l'AI?
+            {t.problemTitle}
           </h2>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -384,30 +387,24 @@ function App() {
               <div className="inline-block p-4 bg-red-500/10 rounded-full mb-4">
                 <AlertTriangle size={40} className="text-red-500" />
               </div>
-              <h3 className="text-2xl font-bold mb-3">Più veloce della Pesa</h3>
-              <p className="text-gray-400">
-                L'obiettivo è offrirti un controllo immediato: niente più bilance da cucina. Solo uno scatto e sai quanto materiale hai.
-              </p>
+              <h3 className="text-2xl font-bold mb-3">{t.card1Title}</h3>
+              <p className="text-gray-400">{t.card1Body}</p>
             </div>
 
             <div className="card-glow text-center">
               <div className="inline-block p-4 bg-yellow-500/10 rounded-full mb-4">
                 <FileSpreadsheet size={40} className="text-yellow-500" />
               </div>
-              <h3 className="text-2xl font-bold mb-3">Pesare è una noia</h3>
-              <p className="text-gray-400">
-                Pesare costantemente le bobine e segnare i grammi usa-e-getta su un foglio excel ruba la magia della stampa 3D.
-              </p>
+              <h3 className="text-2xl font-bold mb-3">{t.card2Title}</h3>
+              <p className="text-gray-400">{t.card2Body}</p>
             </div>
 
             <div className="card-glow text-center">
               <div className="inline-block p-4 bg-brand-blue/10 rounded-full mb-4">
                 <BrainCircuit size={40} className="text-brand-blue" />
               </div>
-              <h3 className="text-2xl font-bold mb-3">La Soluzione AI</h3>
-              <p className="text-gray-400">
-                Immagina di scattare una semplice foto alla bobina e avere l'app che ti dice subito: "Rimangono circa 120 grammi". È questo che sto costruendo.
-              </p>
+              <h3 className="text-2xl font-bold mb-3">{t.card3Title}</h3>
+              <p className="text-gray-400">{t.card3Body}</p>
             </div>
           </div>
         </div>
@@ -417,7 +414,7 @@ function App() {
       <section id="upload" className="py-20 px-4 sm:px-6 lg:px-8 border-y border-gray-800">
         <div className="max-w-7xl mx-auto">
           <h2 className="section-title text-center mb-16">
-            Come puoi aiutarmi a costruire il dataset
+            {t.helpTitle}
           </h2>
 
           <div className="grid md:grid-cols-3 gap-12">
@@ -431,10 +428,8 @@ function App() {
                   1
                 </div>
               </div>
-              <h3 className="text-2xl font-bold mb-3">Prendi la Bobina</h3>
-              <p className="text-gray-400">
-                Prendi una bobina di qualsiasi marca, preferibilmente mezza usata.
-              </p>
+              <h3 className="text-2xl font-bold mb-3">{t.step1Title}</h3>
+              <p className="text-gray-400">{t.step1Body}</p>
             </div>
 
             {/* Step 2 */}
@@ -447,10 +442,8 @@ function App() {
                   2
                 </div>
               </div>
-              <h3 className="text-2xl font-bold mb-3">Gira un breve video</h3>
-              <p className="text-gray-400">
-                Tienila in mano e ruotala lentamente davanti alla fotocamera del telefono per 10-15 secondi. Mostra bene i lati e il centro.
-              </p>
+              <h3 className="text-2xl font-bold mb-3">{t.step2Title}</h3>
+              <p className="text-gray-400">{t.step2Body}</p>
             </div>
 
             {/* Step 3 */}
@@ -463,10 +456,8 @@ function App() {
                   3
                 </div>
               </div>
-              <h3 className="text-2xl font-bold mb-3">Carica il File</h3>
-              <p className="text-gray-400">
-                Seleziona il file qui sotto. Ti garantisco il pieno anonimato.
-              </p>
+              <h3 className="text-2xl font-bold mb-3">{t.step3Title}</h3>
+              <p className="text-gray-400">{t.step3Body}</p>
             </div>
           </div>
 
@@ -482,8 +473,8 @@ function App() {
                     disabled={isUploading}
                   />
                   <Upload size={48} className="mx-auto text-gray-500 group-hover:text-brand-orange mb-4 transition-colors" />
-                  <h4 className="text-xl font-medium text-white mb-2">Trascina qui il tuo video o clicca per sfogliare</h4>
-                  <p className="text-gray-400 text-sm">MP4, MOV, WebM - Massimo 50MB</p>
+                  <h4 className="text-xl font-medium text-white mb-2">{t.uploaderDropTitle}</h4>
+                  <p className="text-gray-400 text-sm">{t.uploaderDropSubtitle}</p>
                 </div>
               ) : (
                 <div className="p-8 border border-gray-800 rounded-xl bg-gray-800/50">
@@ -507,7 +498,7 @@ function App() {
                       {uploadPhase === 'reading' && (
                         <>
                           <div className="flex justify-between text-sm mb-2 text-gray-400">
-                            <span>Fase 1/2: Analisi file video locale...</span>
+                            <span>{t.uploaderPhase1}</span>
                             <span>{readProgress}%</span>
                           </div>
                           <div className="w-full bg-gray-700 rounded-full h-2 shadow-inner overflow-hidden">
@@ -519,8 +510,8 @@ function App() {
                       {uploadPhase === 'uploading' && (
                         <>
                           <div className="flex justify-between text-sm mb-2 text-gray-400">
-                            <span>Fase 2/2: Invio a Google Drive in corso...</span>
-                            <span className="animate-pulse">Attendi...</span>
+                            <span>{t.uploaderPhase2}</span>
+                            <span className="animate-pulse">{t.uploaderWait}</span>
                           </div>
                           <div className="w-full bg-gray-700 rounded-full h-2 shadow-inner overflow-hidden relative">
                             <div className="w-1/3 bg-brand-orange h-full rounded-full absolute animate-[loader_1.5s_ease-in-out_infinite]"></div>
@@ -538,7 +529,7 @@ function App() {
                   ) : (
                     <button onClick={handleVideoUpload} className="btn-primary w-full flex items-center justify-center gap-2 relative z-20">
                       <Upload size={20} />
-                      Invia Video al Dataset
+                      {t.uploaderSendBtn}
                     </button>
                   )}
                 </div>
@@ -549,13 +540,13 @@ function App() {
                   <div className="absolute top-0 left-0 w-full h-1 bg-green-500"></div>
                   <div className="flex items-center justify-center gap-3 mb-4 text-green-400">
                     <CheckCircle size={28} />
-                    <h4 className="text-xl font-bold">Upload completato!</h4>
+                    <h4 className="text-xl font-bold">{t.uploaderSuccessTitle}</h4>
                   </div>
-                  <p className="text-gray-300 mb-6 font-medium">Grazie mille per il tuo prezioso contributo. Ti andrebbe di ricevere una mail quando il modello AI sarà pronto?</p>
+                  <p className="text-gray-300 mb-6 font-medium">{t.uploaderSuccessBody}</p>
 
                   {postEmailSuccess ? (
                     <div className="p-4 bg-green-500/10 rounded-lg text-green-400 font-medium">
-                      Iscrizione confermata! Ti terrò aggiornato sui progressi.
+                      {t.uploaderEmailSubscribed}
                     </div>
                   ) : (
                     <form onSubmit={handlePostUploadEmailSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
@@ -564,7 +555,7 @@ function App() {
                         required
                         value={postUploadEmail}
                         onChange={(e) => setPostUploadEmail(e.target.value)}
-                        placeholder="La tua email"
+                        placeholder={t.uploaderEmailPlaceholder}
                         className="flex-1 px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-brand-orange transition-colors"
                         disabled={isSubmittingPostEmail}
                       />
@@ -573,7 +564,7 @@ function App() {
                         className="btn-primary py-3 px-6 whitespace-nowrap text-sm"
                         disabled={isSubmittingPostEmail}
                       >
-                        {isSubmittingPostEmail ? 'Invio in corso...' : 'Tienimi Aggiornato'}
+                        {isSubmittingPostEmail ? t.uploaderEmailBtnLoading : t.uploaderEmailBtn}
                       </button>
                     </form>
                   )}
@@ -588,7 +579,7 @@ function App() {
                       className="text-gray-400 hover:text-brand-orange text-sm font-medium transition-colors flex items-center justify-center gap-2 mx-auto"
                     >
                       <Upload size={16} />
-                      Carica un altro video
+                      {t.uploaderUploadAnother}
                     </button>
                   </div>
                 </div>
@@ -598,11 +589,11 @@ function App() {
                 <div className="mt-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 flex flex-col gap-3 text-left">
                   <div className="flex items-center gap-2">
                     <AlertTriangle size={24} className="flex-shrink-0" />
-                    <span className="text-sm">Errore durante l'upload. Il file potrebbe essere troppo grande o internet instabile.</span>
+                    <span className="text-sm">{t.uploaderError}</span>
                   </div>
                   {uploadErrorDetail && (
                     <div className="p-3 bg-black/40 rounded border border-red-500/20">
-                      <p className="text-xs font-semibold text-red-300 mb-1">Dettaglio tecnico per lo sviluppatore:</p>
+                      <p className="text-xs font-semibold text-red-300 mb-1">{t.uploaderErrorDevLabel}</p>
                       <code className="text-xs text-red-200 break-words font-mono block">
                         {uploadErrorDetail}
                       </code>
@@ -612,7 +603,7 @@ function App() {
               )}
 
               <p className="text-sm text-gray-500 mt-6">
-                Nessun account richiesto. Il tuo video viene salvato in totale <strong className="text-gray-400">anonimato e sicurezza</strong> sul mio Google Drive di ricerca.
+                {t.uploaderPrivacy} <strong className="text-gray-400">{t.uploaderPrivacyBold}</strong> {t.uploaderPrivacy2}
               </p>
             </div>
           </div>
@@ -623,7 +614,7 @@ function App() {
       <section id="faq" className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-900/30">
         <div className="max-w-3xl mx-auto">
           <h2 className="section-title text-center mb-16">
-            FAQ relative al Dataset
+            {t.faqTitle}
           </h2>
 
           <div className="space-y-4">
@@ -658,29 +649,28 @@ function App() {
           </div>
 
           <h2 className="text-4xl font-bold mb-4">
-            Segui l'addestramento dell'AI
+            {t.newsletterTitle}
           </h2>
           <p className="text-xl text-gray-400 mb-8">
-            Non vuoi caricare un video ora ma sei curioso? Lascia la tua email.
-            <br className="hidden md:block" /> Ti aggiorneremo sui risultati della ricerca e sul lancio del modello.
+            {t.newsletterSubtitle}
+            <br className="hidden md:block" /> {t.newsletterSubtitle2}
           </p>
 
           {submitSuccess ? (
             <div className="max-w-xl mx-auto p-6 bg-green-500/10 border border-green-500/30 rounded-lg">
               <CheckCircle2 size={48} className="text-green-500 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-green-500 mb-3">Iscrizione confermata! 🎉</h3>
-              <p className="text-gray-300 text-lg mb-2">Ti terremo aggiornato sui progressi di SpoolID AI.</p>
+              <h3 className="text-2xl font-bold text-green-500 mb-3">{t.newsletterSuccessTitle}</h3>
+              <p className="text-gray-300 text-lg mb-2">{t.newsletterSuccessBody}</p>
             </div>
           ) : (
             <>
               <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto mb-6">
-
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="La tua email"
+                  placeholder={t.newsletterEmailPlaceholder}
                   className="flex-1 px-6 py-4 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-brand-orange transition-colors"
                   disabled={isSubmitting}
                 />
@@ -689,7 +679,7 @@ function App() {
                   className="btn-primary whitespace-nowrap"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Iscrizione...' : 'Resta Aggiornato'}
+                  {isSubmitting ? t.newsletterBtnLoading : t.newsletterBtn}
                 </button>
               </form>
 
@@ -697,11 +687,11 @@ function App() {
               <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-500 mb-4">
                 <div className="flex items-center gap-2">
                   <Lock size={16} className="text-gray-600" />
-                  <span>Nessuno spam</span>
+                  <span>{t.newsletterNoSpam}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Zap size={16} className="text-gray-600" />
-                  <span>Solo aggiornamenti utili</span>
+                  <span>{t.newsletterUseful}</span>
                 </div>
               </div>
             </>
@@ -712,7 +702,7 @@ function App() {
       {/* Footer */}
       <footer className="border-t border-gray-800 py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center text-gray-500">
-          <p>&copy; 2026 SpoolID AI Research. Project by Makers per i Makers.</p>
+          <p>{t.footerText}</p>
         </div>
       </footer>
     </div>
