@@ -194,25 +194,18 @@ function App() {
         </div>
       </section>
 
-      {/* Stats Bar */}
-      <section className="py-12 px-4 bg-gradient-to-r from-brand-orange/10 to-brand-blue/10 border-y border-brand-orange/20">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-4xl font-bold text-brand-orange mb-2">10.000+</div>
-              <div className="text-sm text-gray-400">Video Necessari Obiettivo</div>
-            </div>
-            <div>
+      {/* Stats Section */}
+      <section className="border-y border-gray-800 bg-gray-900/50 backdrop-blur-sm relative py-12">
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-brand-orange to-transparent opacity-20"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-gray-800">
+            <div className="py-4">
               <div className="text-4xl font-bold text-brand-blue mb-2">100%</div>
-              <div className="text-sm text-gray-400">Open Source Approach</div>
+              <div className="text-sm tracking-wider uppercase text-gray-500">Open Source Approach</div>
             </div>
-            <div>
+            <div className="py-4">
               <div className="text-4xl font-bold text-brand-orange mb-2">Qualsiasi</div>
-              <div className="text-sm text-gray-400">Marca Supportata</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold text-brand-blue mb-2">60 sec</div>
-              <div className="text-sm text-gray-400">Tempo per contribuire</div>
+              <div className="text-sm tracking-wider uppercase text-gray-500">Marca Supportata</div>
             </div>
           </div>
         </div>
