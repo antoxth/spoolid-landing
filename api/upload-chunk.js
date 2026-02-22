@@ -1,25 +1,20 @@
 /**
  * PUT /api/upload-chunk
  * Headers:
- *   x-upload-url    — the Google resumable upload URL from /api/initiate-upload
- *   x-range-start   — byte offset of this chunk (e.g. "0", "3145728", …)
- *   x-total-size    — total file size in bytes
- *   x-mime-type     — the video MIME type (e.g. "video/mp4")
- * Body: raw binary chunk (max 3 MB to stay within Vercel's 4.5 MB body limit)
+ *   x-upload-url   — Google resumable upload URL from /api/initiate-upload
+ *   x-range-start  — byte offset of this chunk
+ *   x-total-size   — total file size in bytes
+ *   x-mime-type    — video MIME type
+ * Body: raw binary chunk (≤ 3 MB to stay under Vercel's 4.5 MB limit)
  *
- * Forwards the chunk to Google's resumable upload endpoint with the correct
- * Content-Range header. Google responds 308 (incomplete) or 200/201 (done).
+ * Proxies the chunk to Google Drive's resumable upload endpoint.
  */
-export default async function handler(req, res) {
-    // CORS for local dev
+module.exports = async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*')
     res.setHeader('Access-Control-Allow-Methods', 'PUT, OPTIONS')
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-upload-url, x-range-start, x-total-size, x-mime-type')
     if (req.method === 'OPTIONS') return res.status(200).end()
-
-    if (req.method !== 'PUT') {
-        return res.status(405).json({ error: 'Method not allowed' })
-    }
+    if (req.method !== 'PUT') return res.status(405).json({ error: 'Method not allowed' })
 
     try {
         const uploadUrl = req.headers['x-upload-url']
@@ -35,37 +30,36 @@ export default async function handler(req, res) {
         const body = Buffer.concat(bodyChunks)
 
         const rangeEnd = rangeStart + body.length - 1
-        const isLast = rangeEnd + 1 >= totalSize
+        const isLast = (rangeEnd + 1) >= totalSize
         const contentRange = isLast
-            ? `bytes ${rangeStart}-${rangeEnd}/${totalSize}`
-            : `bytes ${rangeStart}-${rangeEnd}/*`
+            ? ('bytes ' + rangeStart + '-' + rangeEnd + '/' + totalSize)
+            : ('bytes ' + rangeStart + '-' + rangeEnd + '/*')
 
         // Forward chunk to Google Drive resumable upload URL
         const googleRes = await fetch(uploadUrl, {
             method: 'PUT',
             headers: {
                 'Content-Type': mimeType,
-                'Content-Length': body.length.toString(),
+                'Content-Length': String(body.length),
                 'Content-Range': contentRange,
             },
-            body,
+            body: body,
         })
 
-        // 308 = Google received the chunk, waiting for more
+        // 308 = chunk received, waiting for more
         if (googleRes.status === 308) {
             return res.status(200).json({ status: 'chunk_ok', received: rangeEnd + 1 })
         }
 
-        // 200 or 201 = final chunk accepted, upload complete
+        // 200/201 = upload complete
         if (googleRes.status === 200 || googleRes.status === 201) {
             const fileInfo = await googleRes.json()
             return res.status(200).json({ status: 'success', fileId: fileInfo.id, fileName: fileInfo.name })
         }
 
-        // Unexpected status from Google
         const errText = await googleRes.text()
         return res.status(500).json({
-            error: `Google returned HTTP ${googleRes.status}: ${errText.substring(0, 300)}`,
+            error: 'Google HTTP ' + googleRes.status + ': ' + errText.substring(0, 300),
         })
     } catch (err) {
         console.error('upload-chunk error:', err)
