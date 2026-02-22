@@ -22,38 +22,7 @@ function App() {
   const [email, setEmail] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
-  const [makerCount, setMakerCount] = useState(0)
   const [openFaq, setOpenFaq] = useState(null)
-
-  // Initial animated counter effect Let's pretend we have some initial videos
-  useEffect(() => {
-    const targetCount = 142
-    const duration = 4000
-    const steps = 80
-    const increment = targetCount / steps
-    let current = 0
-
-    const timer = setInterval(() => {
-      current += increment
-      if (current >= targetCount) {
-        setMakerCount(targetCount)
-        clearInterval(timer)
-      } else {
-        setMakerCount(Math.floor(current))
-      }
-    }, duration / steps)
-
-    return () => clearInterval(timer)
-  }, [])
-
-  // Periodic increment effect
-  useEffect(() => {
-    const incrementInterval = setInterval(() => {
-      setMakerCount(prev => prev + 1)
-    }, Math.random() * 8000 + 10000)
-
-    return () => clearInterval(incrementInterval)
-  }, [])
 
   const handleNewsletterSubmit = async (e) => {
     e.preventDefault()
@@ -204,16 +173,12 @@ function App() {
               </h2>
               <p className="text-xl text-gray-400 mb-8 leading-relaxed">
                 Sto sviluppando un modello di Intelligenza Artificiale rivoluzionario per i maker.
-                Ho bisogno di <span className="text-brand-orange font-semibold">migliaia di video</span> di bobine per addestrare il mio algoritmo. Ti bastano <strong className="text-white">60 secondi</strong> per aiutarmi.
+                Ho bisogno di <span className="text-brand-orange font-semibold">tanti video</span> di bobine per addestrare il mio algoritmo. Ti bastano <strong className="text-white">60 secondi</strong> per aiutarmi.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center mb-6">
                 <a href="#upload" className="btn-primary inline-block">
                   Scopri come aiutare
                 </a>
-                <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <Upload size={18} className="text-brand-orange" />
-                  <span><strong className="text-white">{makerCount}</strong> video già raccolti</span>
-                </div>
               </div>
             </div>
 
@@ -265,9 +230,9 @@ function App() {
               <div className="inline-block p-4 bg-red-500/10 rounded-full mb-4">
                 <AlertTriangle size={40} className="text-red-500" />
               </div>
-              <h3 className="text-2xl font-bold mb-3">Slicers Inaffidabili</h3>
+              <h3 className="text-2xl font-bold mb-3">Più veloce della Pesa</h3>
               <p className="text-gray-400">
-                Le stime di chiusura dei software di slicer si basano su calcoli teorici. Spesso e volentieri si sbagliano e le stampe falliscono a metà.
+                L'obiettivo è offrirti un controllo immediato: niente più bilance da cucina o taring delle bobine vuote. Solo uno scatto e sai quanto materiale hai.
               </p>
             </div>
 
