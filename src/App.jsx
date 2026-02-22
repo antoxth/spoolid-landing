@@ -26,7 +26,8 @@ function App() {
   const [openFaq, setOpenFaq] = useState(null)
 
   const [videoFile, setVideoFile] = useState(null)
-  const [uploadProgress, setUploadProgress] = useState(0)
+  const [uploadPhase, setUploadPhase] = useState(null) // 'reading' | 'uploading' | 'success' | 'error'
+  const [readProgress, setReadProgress] = useState(0)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadStatus, setUploadStatus] = useState(null)
 
@@ -115,89 +116,62 @@ function App() {
   const handleVideoUpload = async () => {
     if (!videoFile) return
     setIsUploading(true)
+    setUploadPhase('reading')
+    setReadProgress(0)
     setUploadStatus(null)
-    setUploadProgress(0)
 
     try {
       const reader = new FileReader()
 
-      // 1. Traccia la conversione in Base64 (può servire qualche secondo per video grandi)
       reader.onprogress = (event) => {
         if (event.lengthComputable) {
-          const percentLoaded = Math.round((event.loaded / event.total) * 10)
-          setUploadProgress(percentLoaded)
+          const percentLoaded = Math.round((event.loaded / event.total) * 100)
+          setReadProgress(percentLoaded)
         }
       }
 
-      reader.onload = () => {
-        setUploadProgress(10)
+      reader.onload = async () => {
+        setUploadPhase('uploading')
         const base64Data = reader.result
 
-        const payload = JSON.stringify({
-          action: 'upload_video',
-          fileName: videoFile.name,
-          mimeType: videoFile.type,
-          fileData: base64Data
-        })
+        try {
+          const response = await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'text/plain;charset=utf-8',
+            },
+            body: JSON.stringify({
+              action: 'upload_video',
+              fileName: videoFile.name,
+              mimeType: videoFile.type,
+              fileData: base64Data
+            })
+          })
 
-        // 2. Traccia il reale upload di rete tramite XHR (senza preflight CORS errati)
-        const xhr = new XMLHttpRequest()
-        xhr.open('POST', APPS_SCRIPT_URL, true)
-        xhr.setRequestHeader('Content-Type', 'text/plain')
+          const data = await response.json()
 
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable) {
-            const percentComplete = Math.round((event.loaded / event.total) * 89)
-            setUploadProgress(10 + percentComplete)
-          }
-        }
-
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 400) {
-            try {
-              const data = JSON.parse(xhr.responseText)
-              if (data.status === 'success') {
-                setUploadProgress(100)
-                setUploadStatus('success')
-                setVideoFile(null)
-              } else {
-                throw new Error(data.message || 'Upload failed')
-              }
-            } catch (err) {
-              console.error('Upload API Parse Error:', err)
-              setUploadStatus('error')
-            }
+          if (data.status === 'success') {
+            setUploadPhase('success')
+            setUploadStatus('success')
+            setVideoFile(null)
           } else {
-            console.error('Upload Server Error:', xhr.status, xhr.statusText)
-            setUploadStatus('error')
+            throw new Error(data.message || 'Upload failed')
           }
-          setIsUploading(false)
-        }
-
-        xhr.onerror = () => {
-          console.error('Upload Network/CORS Error')
+        } catch (err) {
+          console.error('Upload API Error:', err)
           setUploadStatus('error')
+          setUploadPhase('error')
+        } finally {
           setIsUploading(false)
-          setUploadProgress(0)
         }
-
-        // Prevents getting stuck indefinitely
-        xhr.timeout = 300000; // 5 minutes max
-        xhr.ontimeout = () => {
-          console.error('Upload Timeout Error')
-          setUploadStatus('error')
-          setIsUploading(false)
-          setUploadProgress(0)
-        }
-
-        xhr.send(payload)
       }
 
       reader.onerror = (error) => {
         console.error('File reading error:', error)
         setUploadStatus('error')
+        setUploadPhase('error')
         setIsUploading(false)
-        setUploadProgress(0)
+        setReadProgress(0)
       }
 
       // Avvia la lettura
@@ -206,8 +180,9 @@ function App() {
     } catch (error) {
       console.error('General Upload Error:', error)
       setUploadStatus('error')
+      setUploadPhase('error')
       setIsUploading(false)
-      setUploadProgress(0)
+      setReadProgress(0)
     }
   }
 
@@ -499,13 +474,36 @@ function App() {
 
                   {isUploading ? (
                     <div className="w-full">
-                      <div className="flex justify-between text-sm mb-2 text-gray-400">
-                        <span>Caricamento in corso...</span>
-                        <span>{uploadProgress}%</span>
-                      </div>
-                      <div className="w-full bg-gray-700 rounded-full h-2 shadow-inner overflow-hidden">
-                        <div className="bg-brand-orange h-2 rounded-full transition-all duration-150 ease-out" style={{ width: `${uploadProgress}%` }}></div>
-                      </div>
+                      {uploadPhase === 'reading' && (
+                        <>
+                          <div className="flex justify-between text-sm mb-2 text-gray-400">
+                            <span>Fase 1/2: Analisi file video locale...</span>
+                            <span>{readProgress}%</span>
+                          </div>
+                          <div className="w-full bg-gray-700 rounded-full h-2 shadow-inner overflow-hidden">
+                            <div className="bg-brand-orange h-2 rounded-full transition-all duration-150 ease-out" style={{ width: `${readProgress}%` }}></div>
+                          </div>
+                        </>
+                      )}
+
+                      {uploadPhase === 'uploading' && (
+                        <>
+                          <div className="flex justify-between text-sm mb-2 text-gray-400">
+                            <span>Fase 2/2: Invio a Google Drive in corso...</span>
+                            <span className="animate-pulse">Attendi...</span>
+                          </div>
+                          <div className="w-full bg-gray-700 rounded-full h-2 shadow-inner overflow-hidden relative">
+                            <div className="w-1/3 bg-brand-orange h-full rounded-full absolute animate-[loader_1.5s_ease-in-out_infinite]"></div>
+                          </div>
+                          <style>{`
+                            @keyframes loader {
+                              0% { left: -33%; }
+                              50% { left: 100%; right: -33%; }
+                              100% { left: -33%; }
+                            }
+                          `}</style>
+                        </>
+                      )}
                     </div>
                   ) : (
                     <button onClick={handleVideoUpload} className="btn-primary w-full flex items-center justify-center gap-2 relative z-20">
