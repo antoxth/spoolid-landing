@@ -106,6 +106,16 @@ function App() {
   const handleFileChange = (e) => {
     const file = e.target.files[0]
     if (file && file.type.startsWith('video/')) {
+      // Base64 encoding adds ~33% overhead. Apps Script has a hard 50MB POST limit.
+      // So max raw file size should be strictly under 40MB (ideally ~35MB) to be safe.
+      const maxSizeInBytes = 40 * 1024 * 1024 // 40 MB
+      if (file.size > maxSizeInBytes) {
+        alert(`Il file è troppo grande (${(file.size / 1024 / 1024).toFixed(1)} MB). Google accetta file fino a 40MB via form. Prova a girare un video più breve o abbassare la risoluzione della fotocamera (es. 1080p invece di 4K).`)
+        // Clear the input so they can select again
+        e.target.value = null
+        return
+      }
+
       setVideoFile(file)
       setUploadStatus(null)
     } else if (file) {
