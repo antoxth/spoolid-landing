@@ -106,7 +106,14 @@ function App() {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0]
-    if (file && file.type.startsWith('video/')) {
+
+    // Su Android in-app o browser specifici, il MIME type potrebbe essere vuoto o non standard
+    const validVideoExts = ['.mp4', '.mov', '.webm', '.avi', '.mkv', '.m4v', '.3gp']
+    const isVideoType = file?.type?.startsWith('video/')
+    const hasVideoExt = file?.name && validVideoExts.some(ext => file.name.toLowerCase().endsWith(ext))
+    const isUnidentifiedButLikelyValid = file && file.type === ''
+
+    if (file && (isVideoType || hasVideoExt || isUnidentifiedButLikelyValid)) {
       // Base64 encoding adds ~33% overhead. Apps Script has a hard 50MB POST limit.
       // So max raw file size should be strictly under 40MB (ideally ~35MB) to be safe.
       const maxSizeInBytes = 40 * 1024 * 1024 // 40 MB
@@ -120,7 +127,8 @@ function App() {
       setVideoFile(file)
       setUploadStatus(null)
     } else if (file) {
-      alert("Per favore, seleziona un file video valido.")
+      alert(`Il formato del file (${file?.name || 'sconosciuto'}) non sembra un video standard. Riprova.`)
+      e.target.value = null
     }
   }
 
@@ -154,13 +162,20 @@ function App() {
             },
             body: JSON.stringify({
               action: 'upload_video',
-              fileName: videoFile.name,
-              mimeType: videoFile.type,
+              fileName: videoFile.name || 'android_video.mp4',
+              mimeType: videoFile.type || 'video/mp4',
               fileData: base64Data
             })
           })
 
-          const data = await response.json()
+          const rawText = await response.text()
+          let data;
+
+          try {
+            data = JSON.parse(rawText)
+          } catch (parseErr) {
+            throw new Error(`Google Server Error (HTTP ${response.status}): Il server ha rifiutato il file o è andato in timeout. Risposta di sistema: ${rawText.substring(0, 150)}...`)
+          }
 
           if (data.status === 'success') {
             setUploadPhase('success')
