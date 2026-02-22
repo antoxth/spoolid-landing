@@ -1,40 +1,26 @@
 import crypto from 'crypto'
 
 /**
- * Generates a Google OAuth2 access token from a Service Account JSON key.
+ * Gets a fresh Google access token using the stored OAuth2 refresh token.
  * Uses only Node.js built-in `crypto` — no extra npm packages required.
  */
-async function getGoogleAccessToken(serviceAccount) {
-    const now = Math.floor(Date.now() / 1000)
-    const header = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).toString('base64url')
-    const payload = Buffer.from(JSON.stringify({
-        iss: serviceAccount.client_email,
-        scope: 'https://www.googleapis.com/auth/drive',
-        aud: 'https://oauth2.googleapis.com/token',
-        iat: now,
-        exp: now + 3600,
-    })).toString('base64url')
-
-    const toSign = `${header}.${payload}`
-    const sign = crypto.createSign('RSA-SHA256')
-    sign.update(toSign)
-    const signature = sign.sign(serviceAccount.private_key, 'base64url')
-    const jwt = `${toSign}.${signature}`
-
+async function getAccessToken() {
     const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
-            grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-            assertion: jwt,
+            client_id: process.env.GOOGLE_OAUTH_CLIENT_ID,
+            client_secret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
+            refresh_token: process.env.GOOGLE_OAUTH_REFRESH_TOKEN,
+            grant_type: 'refresh_token',
         }),
     })
 
-    const tokenData = await tokenRes.json()
-    if (!tokenData.access_token) {
-        throw new Error(`Token error: ${JSON.stringify(tokenData)}`)
+    const data = await tokenRes.json()
+    if (!data.access_token) {
+        throw new Error(`Failed to get access token: ${JSON.stringify(data)}`)
     }
-    return tokenData.access_token
+    return data.access_token
 }
 
 /**
@@ -42,23 +28,17 @@ async function getGoogleAccessToken(serviceAccount) {
  * Body: { fileName: string, mimeType: string, fileSize: number }
  * Returns: { uploadUrl: string }
  *
- * Creates a Google Drive resumable upload session using a Service Account.
- * The client then sends binary chunks directly to the returned uploadUrl
- * via /api/upload-chunk.
+ * Creates a Google Drive resumable upload session using the user's OAuth2
+ * credentials (refresh token). Files go into the user's own Drive storage.
  */
 export default async function handler(req, res) {
-    // CORS for local dev
     res.setHeader('Access-Control-Allow-Origin', '*')
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
     if (req.method === 'OPTIONS') return res.status(200).end()
-
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' })
-    }
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
     try {
-        // Read body (Vercel plain serverless functions don't auto-parse)
         const chunks = []
         for await (const chunk of req) chunks.push(chunk)
         const { fileName, mimeType, fileSize } = JSON.parse(Buffer.concat(chunks).toString())
@@ -66,11 +46,7 @@ export default async function handler(req, res) {
         const FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID
         if (!FOLDER_ID) return res.status(500).json({ error: 'GOOGLE_DRIVE_FOLDER_ID not set' })
 
-        const saJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON
-        if (!saJson) return res.status(500).json({ error: 'GOOGLE_SERVICE_ACCOUNT_JSON not set' })
-
-        const serviceAccount = JSON.parse(saJson)
-        const accessToken = await getGoogleAccessToken(serviceAccount)
+        const accessToken = await getAccessToken()
 
         // Initiate resumable upload session with Google Drive
         const initRes = await fetch(
@@ -94,7 +70,9 @@ export default async function handler(req, res) {
         const uploadUrl = initRes.headers.get('location')
         if (!uploadUrl) {
             const errText = await initRes.text()
-            return res.status(500).json({ error: `Google did not return upload URL: ${errText.substring(0, 200)}` })
+            return res.status(500).json({
+                error: `Google did not return upload URL: ${errText.substring(0, 300)}`,
+            })
         }
 
         return res.status(200).json({ uploadUrl })
