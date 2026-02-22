@@ -30,6 +30,7 @@ function App() {
   const [readProgress, setReadProgress] = useState(0)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadStatus, setUploadStatus] = useState(null)
+  const [uploadErrorDetail, setUploadErrorDetail] = useState("")
 
   // Post-upload email state
   const [postUploadEmail, setPostUploadEmail] = useState('')
@@ -129,6 +130,7 @@ function App() {
     setUploadPhase('reading')
     setReadProgress(0)
     setUploadStatus(null)
+    setUploadErrorDetail("")
 
     try {
       const reader = new FileReader()
@@ -171,6 +173,7 @@ function App() {
           console.error('Upload API Error:', err)
           setUploadStatus('error')
           setUploadPhase('error')
+          setUploadErrorDetail(`Fetch Err: ${err.name} - ${err.message}`)
         } finally {
           setIsUploading(false)
         }
@@ -182,6 +185,7 @@ function App() {
         setUploadPhase('error')
         setIsUploading(false)
         setReadProgress(0)
+        setUploadErrorDetail(`FileReader Err: ${error}`)
       }
 
       // Avvia la lettura
@@ -193,6 +197,7 @@ function App() {
       setUploadPhase('error')
       setIsUploading(false)
       setReadProgress(0)
+      setUploadErrorDetail(`General Err: ${error.name} - ${error.message}`)
     }
   }
 
@@ -575,9 +580,19 @@ function App() {
               )}
 
               {uploadStatus === 'error' && (
-                <div className="mt-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 flex items-center justify-center gap-2 text-left">
-                  <AlertTriangle size={24} className="flex-shrink-0" />
-                  <span className="text-sm">Errore durante l'upload. Il file potrebbe essere troppo grande o internet instabile.</span>
+                <div className="mt-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 flex flex-col gap-3 text-left">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle size={24} className="flex-shrink-0" />
+                    <span className="text-sm">Errore durante l'upload. Il file potrebbe essere troppo grande o internet instabile.</span>
+                  </div>
+                  {uploadErrorDetail && (
+                    <div className="p-3 bg-black/40 rounded border border-red-500/20">
+                      <p className="text-xs font-semibold text-red-300 mb-1">Dettaglio tecnico per lo sviluppatore:</p>
+                      <code className="text-xs text-red-200 break-words font-mono block">
+                        {uploadErrorDetail}
+                      </code>
+                    </div>
+                  )}
                 </div>
               )}
 
