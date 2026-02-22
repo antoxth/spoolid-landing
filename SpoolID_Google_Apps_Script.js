@@ -8,8 +8,8 @@
 // ==========================================
 // 🔴 CONFIGURAZIONE INIZIALE OBBLIGATORIA 🔴
 // ==========================================
-const FOLDER_ID = "INSERISCI_QUI_L_ID_DELLA_CARTELLA_DRIVE";
-const SPREADSHEET_ID = "INSERISCI_QUI_L_ID_DEL_FOGLIO_GOOGLE";
+const FOLDER_ID = "1RR6ECh7V5-yLZKwP8DrQc37-6Mmho0Ip";
+const SPREADSHEET_ID = "1nD9y2jDXMfR4x9X7w0SRLbPSJ5wingJ91wAMIjY3uEg";
 const NOTIFICATION_EMAIL = "antoniocolucciph@gmail.com";
 
 // ==========================================

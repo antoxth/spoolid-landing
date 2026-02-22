@@ -50,6 +50,16 @@ function App({ lang = 'en' }) {
     document.documentElement.lang = t.htmlLang
   }, [t.htmlLang])
 
+  // Close language dropdown when clicking outside
+  useEffect(() => {
+    if (!langOpen) return
+    const handler = (e) => {
+      if (!e.target.closest('#lang-dropdown')) setLangOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [langOpen])
+
   const handleNewsletterSubmit = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -148,12 +158,22 @@ function App({ lang = 'en' }) {
     setUploadStatus(null)
     setUploadErrorDetail("")
 
+    // Safe base64 converter: avoids stack overflow (apply limit) and O(n²)
+    // string concat on iOS Safari. Uses 8KB mini-batches with apply().
+    const toBase64 = (uint8Slice) => {
+      const MINI = 8192 // 8 KB — well within iOS call-stack limits
+      let binary = ''
+      for (let i = 0; i < uint8Slice.length; i += MINI) {
+        binary += String.fromCharCode.apply(null, uint8Slice.subarray(i, i + MINI))
+      }
+      return btoa(binary)
+    }
+
     try {
-      // --- CHUNKED UPLOAD (memory-safe for Android Chrome) ---
-      // Instead of loading the entire file as a data URL (which triples RAM usage),
-      // we read it as a raw ArrayBuffer in one shot, then convert to base64 in
-      // small 4 MB chunks and send each chunk sequentially.
-      const CHUNK_SIZE = 4 * 1024 * 1024 // 4 MB per chunk
+      // --- CHUNKED UPLOAD (memory-safe for Android & iOS) ---
+      // 1.5 MB per chunk: small enough to stay under Safari's per-request limits
+      // while still efficient (a 30 MB file = ~20 sequential requests).
+      const CHUNK_SIZE = 1.5 * 1024 * 1024 // 1.5 MB
 
       const arrayBuffer = await new Promise((resolve, reject) => {
         const reader = new FileReader()
@@ -175,10 +195,7 @@ function App({ lang = 'en' }) {
 
       for (let i = 0; i < totalChunks; i++) {
         const slice = uint8.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
-        // Convert Uint8Array slice to base64 without holding the full file in memory
-        let binary = ''
-        for (let j = 0; j < slice.length; j++) binary += String.fromCharCode(slice[j])
-        const chunkBase64 = btoa(binary)
+        const chunkBase64 = toBase64(slice)
 
         const response = await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
@@ -253,16 +270,16 @@ function App({ lang = 'en' }) {
 
             {/* Right side: CTA + Language switcher dropdown */}
             <div className="hidden md:flex items-center gap-4">
-              <div className="relative">
+              <div className="relative" id="lang-dropdown">
                 <button
                   onClick={() => setLangOpen(!langOpen)}
-                  className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1"
+                  className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1 px-2 py-1 rounded hover:bg-gray-800"
                 >
                   🌐 {t.langCode.toUpperCase()}
-                  <ChevronDown size={14} className={`transition-transform ${langOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown size={12} className={`transition-transform duration-200 ${langOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {langOpen && (
-                  <div className="absolute right-0 top-8 bg-gray-900 border border-gray-700 rounded-lg shadow-xl py-1 z-50 min-w-[100px]">
+                  <div className="absolute right-0 top-9 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl py-1 z-50 min-w-[120px] overflow-hidden">
                     {t.otherLangs.map(l => (
                       <button
                         key={l.path}
@@ -296,43 +313,42 @@ function App({ lang = 'en' }) {
         {mobileMenuOpen && (
           <div className="md:hidden bg-gray-900 border-t border-gray-800">
             <div className="px-4 pt-2 pb-3 space-y-1">
-              <a
-                href="#progetto"
-                className="block px-3 py-2 text-gray-300 hover:text-white transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
+              <a href="#progetto" className="block px-3 py-2 text-gray-300 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>
                 {t.navProject}
               </a>
-              <a
-                href="#upload"
-                className="block px-3 py-2 text-gray-300 hover:text-white transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
+              <a href="#upload" className="block px-3 py-2 text-gray-300 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>
                 {t.navHelp}
               </a>
-              <a
-                href="#faq"
-                className="block px-3 py-2 text-gray-300 hover:text-white transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
+              <a href="#faq" className="block px-3 py-2 text-gray-300 hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>
                 {t.navFaq}
               </a>
-              <a
-                href="#upload"
-                className="block px-3 py-2 text-brand-orange hover:text-white transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
+              <a href="#upload" className="block px-3 py-2 text-brand-orange hover:text-white transition-colors" onClick={() => setMobileMenuOpen(false)}>
                 {t.navCta}
               </a>
-              {t.otherLangs.map(l => (
+
+              {/* ── Unified Language Submenu ── */}
+              <div className="border-t border-gray-800 pt-1 mt-1">
                 <button
-                  key={l.path}
-                  onClick={() => { navigate(l.path); setMobileMenuOpen(false) }}
-                  className="block px-3 py-2 text-gray-400 hover:text-white transition-colors text-sm text-left w-full"
+                  onClick={() => setLangOpen(!langOpen)}
+                  className="flex items-center justify-between w-full px-3 py-2 text-sm text-gray-400 hover:text-white transition-colors"
                 >
-                  {l.label}
+                  <span>🌐 {t.langCode.toUpperCase()} — Language</span>
+                  <ChevronDown size={14} className={`transition-transform duration-200 ${langOpen ? 'rotate-180' : ''}`} />
                 </button>
-              ))}
+                {langOpen && (
+                  <div className="pl-4 space-y-1 pb-1">
+                    {t.otherLangs.map(l => (
+                      <button
+                        key={l.path}
+                        onClick={() => { navigate(l.path); setMobileMenuOpen(false); setLangOpen(false) }}
+                        className="block w-full text-left px-3 py-1.5 text-sm text-gray-400 hover:text-white hover:bg-gray-800 rounded transition-colors"
+                      >
+                        {l.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
