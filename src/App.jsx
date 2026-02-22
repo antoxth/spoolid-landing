@@ -88,7 +88,7 @@ function App() {
   const faqs = [
     {
       q: "A cosa serve il video che devo caricare?",
-      a: "Il video ci serve per estrarre diverse angolazioni della tua bobina. Questi dati (dataset) verranno 'dati in pasto' a un modello di Intelligenza Artificiale per insegnargli a stimare quanto filamento è rimasto basandosi puramente sull'analisi visiva."
+      a: "Il video mi serve per estrarre diverse angolazioni della tua bobina. Questi dati (dataset) verranno 'dati in pasto' a un modello di Intelligenza Artificiale per insegnargli a stimare quanto filamento è rimasto basandosi puramente sull'analisi visiva."
     },
     {
       q: "Posso partecipare con qualsiasi marca di filamento?",
@@ -96,11 +96,11 @@ function App() {
     },
     {
       q: "I miei dati personali e video sono al sicuro?",
-      a: "Sì, i video caricati tramite il form finiranno direttamente nel nostro spazio di archiviazione protetto (Google Drive). Verranno utilizzati esclusivamente a scopo di ricerca e non verranno condivisi o venduti."
+      a: "Sì, i video caricati tramite il form finiranno direttamente nel mio spazio di archiviazione protetto (Google Drive). Verranno utilizzati esclusivamente a scopo di ricerca e non verranno condivisi o venduti."
     },
     {
       q: "Cosa succede dopo aver lasciato la mail?",
-      a: "Utilizzeremo la tua email esclusivamente per tenerti aggiornato mensilmente (nessun blocco di spam!) sui progressi della nostra ricerca AI e sull\'eventuale rilascio dell\'applicazione finale."
+      a: "Utilizzerò la tua email esclusivamente per tenerti aggiornato mensilmente (nessun blocco di spam!) sui progressi della mia ricerca AI e sull'eventuale rilascio dell'applicazione finale."
     }
   ]
 
@@ -126,7 +126,7 @@ function App() {
                 Il Progetto
               </a>
               <a href="#upload" className="text-gray-300 hover:text-white transition-colors">
-                Come Contribuire
+                Come Aiutarmi
               </a>
               <a href="#faq" className="text-gray-300 hover:text-white transition-colors">
                 FAQ
@@ -168,7 +168,7 @@ function App() {
                 className="block px-3 py-2 text-gray-300 hover:text-white transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Come Contribuire
+                Come Aiutarmi
               </a>
               <a
                 href="#faq"
@@ -203,12 +203,12 @@ function App() {
                 Stimare il filamento residuo da una <span className="text-brand-orange">semplice foto</span>.
               </h2>
               <p className="text-xl text-gray-400 mb-8 leading-relaxed">
-                Stiamo sviluppando un modello di Intelligenza Artificiale rivoluzionario per i maker.
-                Abbiamo bisogno di <span className="text-brand-orange font-semibold">migliaia di video</span> di bobine per addestrare il nostro algoritmo. Ti bastano <strong className="text-white">60 secondi</strong> per contribuire.
+                Sto sviluppando un modello di Intelligenza Artificiale rivoluzionario per i maker.
+                Ho bisogno di <span className="text-brand-orange font-semibold">migliaia di video</span> di bobine per addestrare il mio algoritmo. Ti bastano <strong className="text-white">60 secondi</strong> per aiutarmi.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center mb-6">
                 <a href="#upload" className="btn-primary inline-block">
-                  Scopri come contribuire
+                  Scopri come aiutare
                 </a>
                 <div className="flex items-center gap-2 text-sm text-gray-400">
                   <Upload size={18} className="text-brand-orange" />
@@ -219,11 +219,11 @@ function App() {
 
             {/* Hero Visual Mockup */}
             <div className="relative">
-              <img
-                src="/images/ai-hero.png"
-                alt="AI model analyzing a 3D printing filament spool"
-                className="w-full h-auto rounded-2xl shadow-2xl border border-gray-800"
-              />
+              <div className="w-full aspect-[4/3] bg-gray-800 rounded-2xl shadow-2xl relative overflow-hidden border border-gray-700 flex items-center justify-center group flex-col">
+                <div className="absolute inset-0 bg-gradient-to-tr from-brand-orange/20 to-brand-blue/20 opacity-30"></div>
+                <BrainCircuit size={80} className="text-brand-blue mb-4 opacity-80" />
+                <p className="text-gray-400 font-medium">SpoolID AI - Progetto di Ricerca</p>
+              </div>
             </div>
           </div>
         </div>
@@ -282,17 +282,12 @@ function App() {
             </div>
 
             <div className="card-glow text-center">
-              <img
-                src="/images/sample-dataset.jpg"
-                alt="Esempio di frame dal dataset per addestramento AI"
-                className="w-full h-48 object-cover rounded-lg mb-4"
-              />
               <div className="inline-block p-4 bg-brand-blue/10 rounded-full mb-4">
                 <BrainCircuit size={40} className="text-brand-blue" />
               </div>
               <h3 className="text-2xl font-bold mb-3">La Soluzione AI</h3>
               <p className="text-gray-400">
-                Immagina di scattare una semplice foto alla bobina e avere l'app che ti dice subito: "Rimangono circa 120 grammi". È questo che stiamo costruendo.
+                Immagina di scattare una semplice foto alla bobina e avere l'app che ti dice subito: "Rimangono circa 120 grammi". È questo che sto costruendo.
               </p>
             </div>
           </div>
@@ -303,7 +298,7 @@ function App() {
       <section id="upload" className="py-20 px-4 sm:px-6 lg:px-8 border-y border-gray-800">
         <div className="max-w-7xl mx-auto">
           <h2 className="section-title text-center mb-16">
-            Come puoi aiutarci a costruire il dataset
+            Come puoi aiutarmi a costruire il dataset
           </h2>
 
           <div className="grid md:grid-cols-3 gap-12">
@@ -351,7 +346,7 @@ function App() {
               </div>
               <h3 className="text-2xl font-bold mb-3">Carica il File</h3>
               <p className="text-gray-400">
-                Clicca sul pulsante qui sotto per inviarci il video tramite il nostro modulo sicuro di Google Drive.
+                Clicca sul pulsante qui sotto per inviarmi il video tramite il mio modulo sicuro di Google Drive.
               </p>
             </div>
           </div>
