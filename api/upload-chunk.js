@@ -5,11 +5,9 @@
  *   x-range-start  — byte offset of this chunk
  *   x-total-size   — total file size in bytes
  *   x-mime-type    — video MIME type
- * Body: raw binary chunk (≤ 3 MB to stay under Vercel's 4.5 MB limit)
- *
- * Proxies the chunk to Google Drive's resumable upload endpoint.
+ * Body: raw binary chunk (≤ 3 MB to stay under Vercel's 4.5 MB body limit)
  */
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*')
     res.setHeader('Access-Control-Allow-Methods', 'PUT, OPTIONS')
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-upload-url, x-range-start, x-total-size, x-mime-type')
@@ -32,10 +30,9 @@ module.exports = async function handler(req, res) {
         const rangeEnd = rangeStart + body.length - 1
         const isLast = (rangeEnd + 1) >= totalSize
         const contentRange = isLast
-            ? ('bytes ' + rangeStart + '-' + rangeEnd + '/' + totalSize)
-            : ('bytes ' + rangeStart + '-' + rangeEnd + '/*')
+            ? `bytes ${rangeStart}-${rangeEnd}/${totalSize}`
+            : `bytes ${rangeStart}-${rangeEnd}/*`
 
-        // Forward chunk to Google Drive resumable upload URL
         const googleRes = await fetch(uploadUrl, {
             method: 'PUT',
             headers: {
@@ -43,24 +40,19 @@ module.exports = async function handler(req, res) {
                 'Content-Length': String(body.length),
                 'Content-Range': contentRange,
             },
-            body: body,
+            body,
         })
 
-        // 308 = chunk received, waiting for more
         if (googleRes.status === 308) {
             return res.status(200).json({ status: 'chunk_ok', received: rangeEnd + 1 })
         }
-
-        // 200/201 = upload complete
         if (googleRes.status === 200 || googleRes.status === 201) {
             const fileInfo = await googleRes.json()
             return res.status(200).json({ status: 'success', fileId: fileInfo.id, fileName: fileInfo.name })
         }
 
         const errText = await googleRes.text()
-        return res.status(500).json({
-            error: 'Google HTTP ' + googleRes.status + ': ' + errText.substring(0, 300),
-        })
+        return res.status(500).json({ error: `Google HTTP ${googleRes.status}: ${errText.substring(0, 300)}` })
     } catch (err) {
         console.error('upload-chunk error:', err)
         return res.status(500).json({ error: err.message })

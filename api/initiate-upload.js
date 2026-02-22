@@ -1,36 +1,12 @@
-const crypto = require('crypto')
-
-/**
- * Exchanges the OAuth2 refresh token for a short-lived access token.
- * Uses only built-in Node.js crypto — no extra npm packages required.
- */
-async function getAccessToken() {
-    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-            client_id: process.env.GOOGLE_OAUTH_CLIENT_ID,
-            client_secret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
-            refresh_token: process.env.GOOGLE_OAUTH_REFRESH_TOKEN,
-            grant_type: 'refresh_token',
-        }).toString(),
-    })
-    const data = await tokenRes.json()
-    if (!data.access_token) {
-        throw new Error('Token refresh failed: ' + JSON.stringify(data))
-    }
-    return data.access_token
-}
-
 /**
  * POST /api/initiate-upload
  * Body: { fileName, mimeType, fileSize }
  * Returns: { uploadUrl }
  *
- * Creates a Google Drive resumable upload session using the user's own
- * OAuth2 credentials — files land in the user's Drive (no 403 quota issue).
+ * Creates a Google Drive resumable upload session using the user's OAuth2
+ * refresh token — files land in the user's own Drive (2TB quota).
  */
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*')
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
@@ -38,15 +14,35 @@ module.exports = async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
     try {
-        // Read body (Vercel plain functions don't auto-parse)
+        // Read body (plain Vercel functions don't auto-parse)
         const chunks = []
         for await (const chunk of req) chunks.push(chunk)
         const { fileName, mimeType, fileSize } = JSON.parse(Buffer.concat(chunks).toString())
 
         const FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID
-        if (!FOLDER_ID) return res.status(500).json({ error: 'GOOGLE_DRIVE_FOLDER_ID not set' })
+        const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID
+        const clientSec = process.env.GOOGLE_OAUTH_CLIENT_SECRET
+        const refreshTok = process.env.GOOGLE_OAUTH_REFRESH_TOKEN
 
-        const accessToken = await getAccessToken()
+        if (!FOLDER_ID || !clientId || !clientSec || !refreshTok) {
+            return res.status(500).json({ error: `Missing env vars — FOLDER_ID:${!!FOLDER_ID} CLIENT_ID:${!!clientId} SECRET:${!!clientSec} REFRESH:${!!refreshTok}` })
+        }
+
+        // Exchange refresh token for fresh access token
+        const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                client_id: clientId,
+                client_secret: clientSec,
+                refresh_token: refreshTok,
+                grant_type: 'refresh_token',
+            }),
+        })
+        const tokenData = await tokenRes.json()
+        if (!tokenData.access_token) {
+            return res.status(500).json({ error: `Token refresh failed: ${JSON.stringify(tokenData)}` })
+        }
 
         // Initiate a Google Drive resumable upload session
         const initRes = await fetch(
@@ -54,13 +50,13 @@ module.exports = async function handler(req, res) {
             {
                 method: 'POST',
                 headers: {
-                    Authorization: `Bearer ${accessToken}`,
+                    Authorization: `Bearer ${tokenData.access_token}`,
                     'Content-Type': 'application/json; charset=UTF-8',
                     'X-Upload-Content-Type': mimeType || 'video/mp4',
                     ...(fileSize ? { 'X-Upload-Content-Length': String(fileSize) } : {}),
                 },
                 body: JSON.stringify({
-                    name: fileName || ('SpoolID_' + Date.now() + '.mp4'),
+                    name: fileName || `SpoolID_${Date.now()}.mp4`,
                     parents: [FOLDER_ID],
                     mimeType: mimeType || 'video/mp4',
                 }),
@@ -70,9 +66,7 @@ module.exports = async function handler(req, res) {
         const uploadUrl = initRes.headers.get('location')
         if (!uploadUrl) {
             const errText = await initRes.text()
-            return res.status(500).json({
-                error: 'Google did not return upload URL: ' + errText.substring(0, 300),
-            })
+            return res.status(500).json({ error: `No upload URL from Google: ${errText.substring(0, 300)}` })
         }
 
         return res.status(200).json({ uploadUrl })
