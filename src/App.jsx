@@ -219,12 +219,11 @@ function App() {
 
             {/* Hero Visual Mockup */}
             <div className="relative">
-              {/* Qui potresti mettere un'immagine mock up di come l'AI riconosce la bobina */}
-              <div className="w-full aspect-[4/3] bg-gray-800 rounded-2xl shadow-2xl relative overflow-hidden border border-gray-700 flex items-center justify-center group flex-col">
-                <div className="absolute inset-0 bg-gradient-to-tr from-brand-orange/20 to-brand-blue/20 opacity-30"></div>
-                <BrainCircuit size={80} className="text-brand-blue mb-4 opacity-80" />
-                <p className="text-gray-400 font-medium">Modello AI in fase di addestramento</p>
-              </div>
+              <img
+                src="/images/ai-hero.png"
+                alt="AI model analyzing a 3D printing filament spool"
+                className="w-full h-auto rounded-2xl shadow-2xl border border-gray-800"
+              />
             </div>
           </div>
         </div>
@@ -283,6 +282,11 @@ function App() {
             </div>
 
             <div className="card-glow text-center">
+              <img
+                src="/images/sample-dataset.jpg"
+                alt="Esempio di frame dal dataset per addestramento AI"
+                className="w-full h-48 object-cover rounded-lg mb-4"
+              />
               <div className="inline-block p-4 bg-brand-blue/10 rounded-full mb-4">
                 <BrainCircuit size={40} className="text-brand-blue" />
               </div>
